@@ -1,6 +1,6 @@
 package com._p1m.portfolio.common.jpa;
 
-import com.project._P1M_Portfolio.common.util.PluralizeUtil;
+import com._p1m.portfolio.common.util.PluralizeUtil;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
