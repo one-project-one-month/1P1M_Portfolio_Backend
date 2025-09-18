@@ -1,4 +1,4 @@
-package com.project._P1M_Portfolio.common.util;
+package com._p1m.portfolio.common.util;
 
 public final class PluralizeUtil {
 

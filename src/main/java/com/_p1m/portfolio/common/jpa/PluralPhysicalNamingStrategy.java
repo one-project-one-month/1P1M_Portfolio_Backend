@@ -1,4 +1,4 @@
-package com.project._P1M_Portfolio.common.jpa;
+package com._p1m.portfolio.common.jpa;
 
 import com.project._P1M_Portfolio.common.util.PluralizeUtil;
 import org.hibernate.boot.model.naming.Identifier;
