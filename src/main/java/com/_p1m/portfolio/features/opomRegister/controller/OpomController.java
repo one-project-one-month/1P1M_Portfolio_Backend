@@ -1,0 +1,46 @@
+package com._p1m.portfolio.features.opomRegister.controller;
+
+import com._p1m.portfolio.config.response.dto.ApiResponse;
+import com._p1m.portfolio.config.response.utils.ResponseUtils;
+import com._p1m.portfolio.features.opomRegister.dto.request.UserRegisterRequest;
+import com._p1m.portfolio.features.opomRegister.service.OpomRegisterService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("${api.base.path}/auth/opomRegister")
+public class OpomController {
+
+    private final OpomRegisterService opomRegisterService;
+
+    @PostMapping
+    @Operation(
+            summary = "Register for OPOM Project",
+            description = "Registers new user in the system.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "User creation request",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = UserRegisterRequest.class))
+            ),
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User Register successfully"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
+            }
+    )
+    public ResponseEntity<ApiResponse> opomRegister(
+            @RequestBody final UserRegisterRequest userRegisterRequest,
+            HttpServletRequest request){
+        final ApiResponse response = this.opomRegisterService.registerUser(userRegisterRequest);
+        return ResponseUtils.buildResponse(request ,response);
+    }
+
+}
