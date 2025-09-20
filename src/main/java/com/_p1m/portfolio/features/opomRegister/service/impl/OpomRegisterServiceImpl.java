@@ -1,6 +1,8 @@
 package com._p1m.portfolio.features.opomRegister.service.impl;
 
+import com._p1m.portfolio.common.constant.Status;
 import com._p1m.portfolio.config.exceptions.DuplicateEntityException;
+import com._p1m.portfolio.config.exceptions.EntityNotFoundException;
 import com._p1m.portfolio.config.response.dto.ApiResponse;
 import com._p1m.portfolio.features.opomRegister.dto.request.UserRegisterRequest;
 import com._p1m.portfolio.features.opomRegister.dto.response.UserRegisterResponse;
@@ -45,6 +47,28 @@ public class OpomRegisterServiceImpl implements OpomRegisterService {
                 .success(1).code(HttpStatus.OK.value())
                 .data(Map.of("Register User Info" , response))
                 .message("Registered for OPOM Project Successfully!")
+                .build();
+    }
+
+    @Override
+    public ApiResponse updateOpomRegisterData(Long id, UserRegisterRequest updateRequest) {
+        OpomRegister opomRegister = this.opomRegisterRespository.findByIdAndStatus(id , Status.ACTIVE)
+                .orElseThrow(()-> new EntityNotFoundException("User Data Not Found wiht Id :" + id));
+
+        opomRegister.setName(updateRequest.getName());
+        opomRegister.setEmail(updateRequest.getEmail());
+        opomRegister.setPhone(updateRequest.getPhone());
+        opomRegister.setGithub_url(updateRequest.getGithub_username());
+        opomRegister.setTelegram_username(updateRequest.getTelegram_username());
+        opomRegister.setRole(updateRequest.getRole());
+
+        opomRegisterRespository.save(opomRegister);
+
+        UserRegisterResponse response = modelMapper.map(opomRegister , UserRegisterResponse.class);
+        return ApiResponse.builder()
+                .success(1).code(HttpStatus.OK.value())
+                .data(Map.of("Update Register User Info" , response))
+                .message("Updated User Register successfully")
                 .build();
     }
 }

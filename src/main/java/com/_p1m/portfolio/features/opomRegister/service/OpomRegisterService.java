@@ -5,4 +5,6 @@ import com._p1m.portfolio.features.opomRegister.dto.request.UserRegisterRequest;
 
 public interface OpomRegisterService {
     ApiResponse registerUser(UserRegisterRequest userRegisterRequest);
+
+    ApiResponse updateOpomRegisterData(Long id ,UserRegisterRequest userRegisterRequest);
 }
