@@ -61,6 +61,8 @@ coverage/
 *.lcov
 
 #Enviroment Variable
+
+added test line
 .env
 
 
