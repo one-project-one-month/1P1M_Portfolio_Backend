@@ -44,7 +44,9 @@ public class JWTFilter extends OncePerRequestFilter {
 
         if(token == null){
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Bro , Where da hell is Token ? 🤨");
+            response.getWriter().write("""
+                    Missing Token. Where da Hell is Token , Bro? =_=
+                    """);
             return;
         }
 
