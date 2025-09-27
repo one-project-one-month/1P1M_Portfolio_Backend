@@ -1,7 +1,7 @@
-package com._p1m.portfolio.security.OAuth2.dto.service;
+package com._p1m.portfolio.security.OAuth2.Google.service;
 
-import com._p1m.portfolio.security.OAuth2.dto.GoogleApiClient;
-import com._p1m.portfolio.security.OAuth2.dto.request.GoogleUserInfo;
+import com._p1m.portfolio.security.OAuth2.Google.GoogleApiClient;
+import com._p1m.portfolio.security.OAuth2.Google.dto.request.GoogleUserInfo;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;

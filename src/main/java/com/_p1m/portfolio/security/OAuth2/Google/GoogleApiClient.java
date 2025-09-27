@@ -1,6 +1,6 @@
-package com._p1m.portfolio.security.OAuth2.dto;
+package com._p1m.portfolio.security.OAuth2.Google;
 
-import com._p1m.portfolio.security.OAuth2.dto.request.GoogleUserInfo;
+import com._p1m.portfolio.security.OAuth2.Google.dto.request.GoogleUserInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;

@@ -1,4 +1,4 @@
-package com._p1m.portfolio.security.OAuth2.dto.request;
+package com._p1m.portfolio.security.OAuth2.Google.dto.request;
 
 import lombok.Builder;
 import lombok.Data;
