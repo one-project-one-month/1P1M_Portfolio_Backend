@@ -1,7 +1,7 @@
 package com._p1m.portfolio.features.opomRegister.repository;
 
 import com._p1m.portfolio.common.constant.Status;
-import com._p1m.portfolio.model.OpomRegister;
+import com._p1m.portfolio.data.models.OpomRegister;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Repository;

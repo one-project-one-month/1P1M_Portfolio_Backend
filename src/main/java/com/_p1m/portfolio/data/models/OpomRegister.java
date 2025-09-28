@@ -28,9 +28,9 @@ public class OpomRegister extends Auditable {
 	@Column(nullable = false)
     private String phone;
     
-    private String github;
+    private String github_url;
     
-    private String telegramUsername;
+    private String telegram_username;
     
     @Column(nullable = false)
     private String role;
@@ -38,4 +38,5 @@ public class OpomRegister extends Auditable {
     @ManyToOne
     @JoinColumn(name = "dev_profiles_id", referencedColumnName = "id")
     private DevProfile devProfile;
+
 }
