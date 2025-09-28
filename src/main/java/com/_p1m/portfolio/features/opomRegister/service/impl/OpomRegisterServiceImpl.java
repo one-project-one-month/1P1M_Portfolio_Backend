@@ -8,7 +8,7 @@ import com._p1m.portfolio.features.opomRegister.dto.request.UserRegisterRequest;
 import com._p1m.portfolio.features.opomRegister.dto.response.UserRegisterResponse;
 import com._p1m.portfolio.features.opomRegister.repository.OpomRegisterRespository;
 import com._p1m.portfolio.features.opomRegister.service.OpomRegisterService;
-import com._p1m.portfolio.model.OpomRegister;
+import com._p1m.portfolio.data.models.OpomRegister;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -52,7 +52,7 @@ public class OpomRegisterServiceImpl implements OpomRegisterService {
 
     @Override
     public ApiResponse updateOpomRegisterData(Long id, UserRegisterRequest updateRequest) {
-        OpomRegister opomRegister = this.opomRegisterRespository.findByIdAndStatus(id , Status.ACTIVE)
+        com._p1m.portfolio.data.models.OpomRegister opomRegister = this.opomRegisterRespository.findByIdAndStatus(id , Status.ACTIVE)
                 .orElseThrow(()-> new EntityNotFoundException("User Data Not Found wiht Id :" + id));
 
         opomRegister.setName(updateRequest.getName());
