@@ -3,6 +3,7 @@ package com._p1m.portfolio.data.models;
 import com._p1m.portfolio.data.models.common.Auditable;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
@@ -16,6 +17,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
+@Entity
 public class OAuthUser extends Auditable {
 	@Column(nullable = false)
 	private String username;
