@@ -97,7 +97,8 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
 
         // Fetch Role entity from DB
-        Role userRole = roleRepository.findByEmail(googleUserInfo.getEmail())
+        // In createUserFromGoogle method, change:
+        Role userRole = roleRepository.findByName("USER")
                 .orElseThrow(() -> new RuntimeException("USER role not found"));
         user.setRole(userRole);
         return userRepository.save(user);
