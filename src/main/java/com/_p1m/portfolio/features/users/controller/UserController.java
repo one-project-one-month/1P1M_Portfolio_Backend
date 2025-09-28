@@ -9,6 +9,10 @@ import com._p1m.portfolio.features.users.dto.response.AuthResponse;
 import com._p1m.portfolio.features.users.service.UserService;
 
 import com._p1m.portfolio.security.OAuth2.Github.dto.request.GithubOAuthRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -24,6 +28,19 @@ public class UserController {
 
     private final UserService userService;
 
+    @Operation(
+            summary = "Login or Signup User Via Google",
+            description = "Login Or SignUp User Via Google",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Login Or SignUp User Via Google Request",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = GoogleOAuthRequest.class))
+            ),
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Google OAuth2 successfully"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
+            }
+    )
     @PostMapping("googleOAuth2")
     public ResponseEntity<ApiResponse> googleOAuth2(@Valid @RequestBody GoogleOAuthRequest googleOAuthRequest,
                                                     HttpServletRequest request){
@@ -31,6 +48,19 @@ public class UserController {
         return ResponseUtils.buildResponse(request , response);
     }
 
+    @Operation(
+            summary = "Login or Signup User Via GitHub",
+            description = "Login Or SignUp User Via GitHub",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Login Or SignUp User Via GitHub Request",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = com._p1m.portfolio.features.users.dto.request.GithubOAuthRequest.class))
+            ),
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "GitHub OAuth2 successfully"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
+            }
+    )
     @PostMapping("githubOAuth2")
     public ResponseEntity<ApiResponse> githubOAuth2(@Valid @RequestBody GithubOAuthRequest githubOAuthRequest,
                                                     HttpServletRequest request){
@@ -39,11 +69,37 @@ public class UserController {
     }
 
 
+    @Operation(
+            summary = "Login User",
+            description = "Login User",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Login User Request",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = LoginRequest.class))
+            ),
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Login User successfully"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
+            }
+    )
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(userService.login(request));
     }
 
+    @Operation(
+            summary = "Signup User",
+            description = "Signup User",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Signup User Request",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = SignupRequest.class))
+            ),
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Sign Up User successfully"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
+            }
+    )
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> signup(@RequestBody SignupRequest request) {
         return ResponseEntity.ok(userService.signup(request));
