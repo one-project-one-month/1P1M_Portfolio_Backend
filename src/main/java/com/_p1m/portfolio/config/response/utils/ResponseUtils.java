@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public class ResponseUtils {
 
-    public static ResponseEntity<ApiResponse> buildResponse(final HttpServletRequest request, final ApiResponse response, final double requestTime) {
+    public static ResponseEntity<ApiResponse> buildResponse(final HttpServletRequest request, final ApiResponse response) {
         final HttpStatus status = HttpStatus.valueOf(response.getCode());
 
         if (response.getMeta() == null) {

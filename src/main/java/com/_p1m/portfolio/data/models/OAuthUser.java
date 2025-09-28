@@ -25,6 +25,11 @@ public class OAuthUser extends Auditable {
 	
 	@Column(nullable = false)
 	private String password;
+
+    private String provider;
+    private String providerUserId;
+    private String profilePicture;
+    private boolean emailVerified;
 	
 	@OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
