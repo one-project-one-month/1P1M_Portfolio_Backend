@@ -1,6 +1,5 @@
 package com._p1m.portfolio.config.response.utils;
 
-import java.time.Instant;
 import java.util.HashMap;
 
 import org.springframework.http.HttpStatus;
@@ -13,7 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public class ResponseUtils {
 
-    public static ResponseEntity<ApiResponse> buildResponse(final HttpServletRequest request, final ApiResponse response, final double requestTime) {
+    public static ResponseEntity<ApiResponse> buildResponse(final HttpServletRequest request, final ApiResponse response) {
         final HttpStatus status = HttpStatus.valueOf(response.getCode());
 
         if (response.getMeta() == null) {
