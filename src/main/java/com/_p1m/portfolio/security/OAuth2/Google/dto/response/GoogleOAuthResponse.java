@@ -1,4 +1,4 @@
-package com._p1m.portfolio.security.OAuth2.Github.dto.response;
+package com._p1m.portfolio.security.OAuth2.Google.dto.response;
 
 import lombok.Data;
 

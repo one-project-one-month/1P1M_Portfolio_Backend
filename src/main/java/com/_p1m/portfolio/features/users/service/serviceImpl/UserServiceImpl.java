@@ -13,8 +13,11 @@ import com._p1m.portfolio.features.users.service.UserService;
 import com._p1m.portfolio.security.JWT.JWTUtil;
 
 import com._p1m.portfolio.security.OAuth2.Github.dto.request.GithubOAuthRequest;
-import com._p1m.portfolio.security.OAuth2.Github.dto.response.GoogleOAuthResponse;
+import com._p1m.portfolio.security.OAuth2.Github.dto.request.GithubUserInfo;
+import com._p1m.portfolio.security.OAuth2.Github.dto.response.GithubOAuthResponse;
+import com._p1m.portfolio.security.OAuth2.Github.service.GithubOAuthService;
 import com._p1m.portfolio.security.OAuth2.Google.dto.request.GoogleUserInfo;
+import com._p1m.portfolio.security.OAuth2.Google.dto.response.GoogleOAuthResponse;
 import com._p1m.portfolio.security.OAuth2.Google.service.GoogleOAuthService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,6 +35,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JWTUtil jwtUtil;
     private final GoogleOAuthService googleOAuthService;
+    private final GithubOAuthService githubOAuthService;
     private final AuthService authService;
 
     @Override
@@ -79,7 +83,49 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponse githubOAuth2Service(GithubOAuthRequest githubOAuthRequest) {
-        return null;
+        // Add validation for token
+        if (githubOAuthRequest.getToken() == null || githubOAuthRequest.getToken().trim().isEmpty()) {
+            return ApiResponse.builder()
+                    .success(0)
+                    .code(400)
+                    .message("Token is required")
+                    .data(null)
+                    .meta(Map.of("timestamp", System.currentTimeMillis()))
+                    .build();
+        }
+
+        try {
+            // Verify GitHub access token and get user info
+            GithubUserInfo githubUserInfo = githubOAuthService.verifyAccessToken(githubOAuthRequest.getToken());
+
+            // Process GitHub OAuth and Save User
+            GithubOAuthResponse githubOAuthResponse = authService.processGithubOAuth(githubUserInfo);
+
+            return ApiResponse.builder()
+                    .success(1)
+                    .code(200)
+                    .message("GitHub OAuth2 Successfully.")
+                    .data(githubOAuthResponse)
+                    .meta(Map.of("timestamp", System.currentTimeMillis()))
+                    .build();
+
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.builder()
+                    .success(0)
+                    .code(400)
+                    .message("Invalid GitHub token: " + e.getMessage())
+                    .data(null)
+                    .meta(Map.of("timestamp", System.currentTimeMillis()))
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.builder()
+                    .success(0)
+                    .code(500)
+                    .message("Internal server error: " + e.getMessage())
+                    .data(null)
+                    .meta(Map.of("timestamp", System.currentTimeMillis()))
+                    .build();
+        }
     }
 
     @Override

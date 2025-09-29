@@ -16,6 +16,11 @@ public class GithubOAuthService {
     }
 
     public GithubUserInfo verifyAccessToken(String accessToken) throws IOException {
+        // First validate the token
+        if (!githubApiClient.validateToken(accessToken)) {
+            throw new IllegalArgumentException("Invalid GitHub access token");
+        }
+        // Get user profile
         return githubApiClient.getUserProfile(accessToken);
     }
 }
