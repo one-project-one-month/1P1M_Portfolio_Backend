@@ -2,17 +2,13 @@ package com._p1m.portfolio.features.users.controller;
 
 import com._p1m.portfolio.config.response.dto.ApiResponse;
 import com._p1m.portfolio.config.response.utils.ResponseUtils;
-import com._p1m.portfolio.features.users.dto.request.CodeRequest;
-import com._p1m.portfolio.features.users.dto.request.GoogleOAuthRequest;
-import com._p1m.portfolio.features.users.dto.request.LoginRequest;
-import com._p1m.portfolio.features.users.dto.request.SignupRequest;
+import com._p1m.portfolio.features.users.dto.request.*;
 import com._p1m.portfolio.features.users.dto.response.AuthResponse;
 import com._p1m.portfolio.features.users.service.UserService;
 
 import com._p1m.portfolio.security.OAuth2.Github.dto.request.GithubOAuthRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -75,17 +71,37 @@ public class UserController {
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "PRODUCTION : Login Or SignUp User Via GitHub Request",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = com._p1m.portfolio.features.users.dto.request.CodeRequest.class))
+                    content = @Content(schema = @Schema(implementation = GithubCodeRequest.class))
             ),
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "GitHub OAuth2 successfully"),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
             }
     )
-    @PostMapping("exchange")
-    public ResponseEntity<ApiResponse> githubExchange(@RequestBody CodeRequest codeRequest,
+    @PostMapping("exchangeGitHub")
+    public ResponseEntity<ApiResponse> githubExchange(@RequestBody GithubCodeRequest codeRequest,
                                                       HttpServletRequest request){
         final ApiResponse response = this.userService.exchangeCodeAndProcessGitHubOAuth(codeRequest);
+        return ResponseUtils.buildResponse(request , response);
+    }
+
+    @Operation(
+            summary = "PRODUCTION : Login or Signup User Via Google",
+            description = "PRODUCTION : FOR LOCAL TESTING : Login Or SignUp User Via Google",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "PRODUCTION : Login Or SignUp User Via Google Request",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = GoogleCodeRequest.class))
+            ),
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Google OAuth2 successfully"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
+            }
+    )
+    @PostMapping("exchangeGoogle")
+    public ResponseEntity<ApiResponse> googleExchange (@RequestBody GoogleCodeRequest googlecodeRequest,
+                                                      HttpServletRequest request){
+        final ApiResponse response = this.userService.exchangeCodeAndProcessGoogleOAuth(googlecodeRequest);
         return ResponseUtils.buildResponse(request , response);
     }
 

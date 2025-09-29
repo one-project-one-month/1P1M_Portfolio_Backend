@@ -36,96 +36,50 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public GoogleOAuthResponse processGoogleOAuth(GoogleUserInfo googleUserInfo) {
+        // Create a new user (no existing-user checks here)
+        User user = createUserFromGoogle(googleUserInfo);
 
-        try{
-            Optional<OAuthUser> existingOAuthUser =
-                    oAuthUserRepository.findByProviderAndProviderUserId("GOOGLE" , googleUserInfo.getGoogleId());
+        // Create OAuthUser linked to this new user
+        createGoogleOAuth(user, googleUserInfo);
 
-            User user;
-            boolean isNewUser = false;
+        // Generate JWT Token
+        String jwtToken =jwtUtil.generateToken(user.getEmail() , TOKEN_VALID_TIME_MILLIS);
 
-            // Check If OAuthUser Present or Not
-            if(existingOAuthUser.isPresent()){
-                user =existingOAuthUser.get().getUser();
-                updateUserOAuth(existingOAuthUser.get() , googleUserInfo);
-            } else {
-                Optional<User> existingUser = userRepository.findByEmail(googleUserInfo.getEmail());
-                if(existingUser.isPresent()){
-                    user = existingUser.get();
-                } else {
-                    user = createUserFromGoogle(googleUserInfo);
-                    isNewUser = true;
-                }
-                createUserOAuth(user , googleUserInfo);
-            }
+        // Building Response
+        GoogleOAuthResponse response= new GoogleOAuthResponse();
+        response.setUser(mapUserToResponse(user));
+        response.setToken(jwtToken);
+        response.setNewUser(true);
 
-            // Generate JWT Token
-            String jwtToken =jwtUtil.generateToken(user.getEmail() , TOKEN_VALID_TIME_MILLIS);
-
-            // Building Response
-            GoogleOAuthResponse respons = new GoogleOAuthResponse();
-            respons.setUser(mapUserToResponse(user));
-            respons.setToken(jwtToken);
-            respons.setNewUser(isNewUser);
-
-            return respons;
-
-        }catch (Exception e) {
-            throw new RuntimeException("Failed to process Google OAuth: " + e.getMessage(), e);
-        }
+        return response;
     }
 
     @Override
     public GithubOAuthResponse processGithubOAuth(GithubUserInfo githubUserInfo) {
-        try {
-            Optional<OAuthUser> existingOAuthUser =
-                    oAuthUserRepository.findByProviderAndProviderUserId("GITHUB", githubUserInfo.getGithubId().toString());
+        // Create a new user (no existing-user checks here)
+        User user = createUserFromGithub(githubUserInfo);
 
-            User user;
-            boolean isNewUser = false;
+        // Create OAuthUser linked to this new user
+        createGithubOAuth(user, githubUserInfo);
 
-            // Check If OAuthUser Present or Not
-            if (existingOAuthUser.isPresent()) {
-                user = existingOAuthUser.get().getUser();
-                updateGithubOAuth(existingOAuthUser.get(), githubUserInfo);
-            } else {
-                // Check if user exists by email (if email is available)
-                if (githubUserInfo.getEmail() != null) {
-                    Optional<User> existingUser = userRepository.findByEmail(githubUserInfo.getEmail());
-                    if (existingUser.isPresent()) {
-                        user = existingUser.get();
-                    } else {
-                        user = createUserFromGithub(githubUserInfo);
-                        isNewUser = true;
-                    }
-                } else {
-                    // No email available, create new user with GitHub username
-                    user = createUserFromGithub(githubUserInfo);
-                    isNewUser = true;
-                }
-                createGithubOAuth(user, githubUserInfo);
-            }
+        // Generate JWT token
+        String jwtToken = jwtUtil.generateToken(
+                user.getEmail() != null ? user.getEmail() : user.getUsername(),
+                TOKEN_VALID_TIME_MILLIS
+        );
 
-            // Generate JWT Token
-            String jwtToken = jwtUtil.generateToken(
-                    user.getEmail() != null ? user.getEmail() : user.getUsername(),
-                    TOKEN_VALID_TIME_MILLIS
-            );
+        // Build response
+        GithubOAuthResponse response = new GithubOAuthResponse();
+        response.setUser(mapUserToResponse(user));
+        response.setToken(jwtToken);
+        response.setNewUser(true);
 
-            // Building Response
-            return GithubOAuthResponse.builder()
-                    .user(mapUserToResponse(user))
-                    .token(jwtToken)
-                    .newUser(isNewUser)
-                    .build();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to process GitHub OAuth: " + e.getMessage(), e);
-        }
+        return response;
     }
 
     private void updateGithubOAuth(OAuthUser oAuthUser, GithubUserInfo githubUser) {
         oAuthUser.setProfilePicture(githubUser.getAvatarUrl());
+        oAuthUser.setProvider("GITHUB");
         oAuthUser.setEmailVerified(githubUser.getEmailVerified());
         oAuthUserRepository.save(oAuthUser);
 
@@ -178,7 +132,7 @@ public class AuthServiceImpl implements AuthService {
         oAuthUserRepository.save(oAuthUser);
     }
 
-    private void createUserOAuth(User user, GoogleUserInfo googleUser) {
+    private void createGoogleOAuth(User user, GoogleUserInfo googleUser) {
         OAuthUser oAuthUser = new OAuthUser();
         oAuthUser.setProvider("GOOGLE");
         oAuthUser.setProviderUserId(googleUser.getGoogleId());

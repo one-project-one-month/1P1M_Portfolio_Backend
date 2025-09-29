@@ -4,8 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class CodeRequest {
+public class GoogleCodeRequest {
 
     @NotBlank(message = "Code cannot be empty")
-    private String code;
+    String code;
 }
