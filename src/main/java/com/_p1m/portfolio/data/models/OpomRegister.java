@@ -1,9 +1,12 @@
 package com._p1m.portfolio.data.models;
 
+import com._p1m.portfolio.common.constant.Status;
 import com._p1m.portfolio.data.models.common.Auditable;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
@@ -39,4 +42,6 @@ public class OpomRegister extends Auditable {
     @JoinColumn(name = "dev_profiles_id", referencedColumnName = "id")
     private DevProfile devProfile;
 
+    @Enumerated(EnumType.STRING)
+    private Status status;
 }

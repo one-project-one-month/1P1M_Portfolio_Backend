@@ -32,7 +32,7 @@ public class DevProfile extends Auditable {
     
     private String github;
     
-    private String linkedId;
+    private String linkedIn;
     
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
