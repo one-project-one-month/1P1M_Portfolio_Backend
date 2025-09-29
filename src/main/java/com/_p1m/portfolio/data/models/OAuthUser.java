@@ -19,14 +19,14 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 public class OAuthUser extends Auditable {
-	@Column(nullable = false)
-	private String username;
-	
-	@Column(nullable = false)
-	private String email;
-	
-	@Column(nullable = false)
-	private String password;
+//	@Column(nullable = false)
+//	private String username;
+//
+//	@Column(nullable = false)
+//	private String email;
+//
+//	@Column(nullable = false)
+//	private String password;
 
     private String provider;
     private String providerUserId;

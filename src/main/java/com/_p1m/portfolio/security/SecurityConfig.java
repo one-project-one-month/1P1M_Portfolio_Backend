@@ -57,12 +57,8 @@ public class SecurityConfig {
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider(userDetailsService, passwordEncoder()))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .cors(cors -> cors.configurationSource(corsConfiguration.corsConfigurationSource()));
-//                .oauth2Login(oauth2 -> oauth2
-//                        .loginPage("/login")
-//                        .defaultSuccessUrl("/auth/oauth2/success", true)
-//                        .failureUrl("/auth/oauth2/failure")
-//                );
+                .cors(cors ->
+                        cors.configurationSource(corsConfiguration.corsConfigurationSource()));
 
         return http.build();
     }

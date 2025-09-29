@@ -23,8 +23,12 @@ public class JWTUtil {
         return validHour * 60 * 60 * 1000L;
     }
 
-    private Key getSigningKey(){
-        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+//    private Key getSigningKey(){
+//        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+//    }
+
+    private Key getSigningKey() {
+        return Keys.secretKeyFor(SignatureAlgorithm.HS256);
     }
 
     public String extractEmail(String token) throws ExpiredJwtException, JwtException{
