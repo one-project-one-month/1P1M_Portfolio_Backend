@@ -6,13 +6,13 @@ on:
       - main
       - staging
       - dev
-      - 'ft*'
+      - ft*
   pull_request:
     branches:
       - main
       - staging
       - dev
-      - 'ft*'
+      - ft*
   workflow_dispatch:
   
 concurrency:
