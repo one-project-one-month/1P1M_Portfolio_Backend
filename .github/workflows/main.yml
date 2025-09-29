@@ -5,13 +5,13 @@ on:
     branches:
       - main
       - staging
-      - develop
+      - dev
       - 'ft*'
   pull_request:
     branches:
       - main
       - staging
-      - develop
+      - dev
       - 'ft*'
   workflow_dispatch:
   
