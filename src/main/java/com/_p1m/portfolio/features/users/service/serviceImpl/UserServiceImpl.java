@@ -4,6 +4,7 @@ import com._p1m.portfolio.config.response.dto.ApiResponse;
 import com._p1m.portfolio.data.models.User;
 import com._p1m.portfolio.data.models.Role;
 import com._p1m.portfolio.data.repositories.UserRepository;
+import com._p1m.portfolio.features.users.dto.request.CodeRequest;
 import com._p1m.portfolio.features.users.dto.request.GoogleOAuthRequest;
 import com._p1m.portfolio.features.users.dto.request.LoginRequest;
 import com._p1m.portfolio.features.users.dto.request.SignupRequest;
@@ -19,11 +20,17 @@ import com._p1m.portfolio.security.OAuth2.Github.service.GithubOAuthService;
 import com._p1m.portfolio.security.OAuth2.Google.dto.request.GoogleUserInfo;
 import com._p1m.portfolio.security.OAuth2.Google.dto.response.GoogleOAuthResponse;
 import com._p1m.portfolio.security.OAuth2.Google.service.GoogleOAuthService;
+import jakarta.validation.constraints.NotBlank;
+import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -37,6 +44,14 @@ public class UserServiceImpl implements UserService {
     private final GoogleOAuthService googleOAuthService;
     private final GithubOAuthService githubOAuthService;
     private final AuthService authService;
+
+    @Value("${github.client-id}")
+    String clientId;
+
+    @Value("${github.client-secret}")
+    String secretKey;
+
+    private static final String TOKEN_URL = "https://github.com/login/oauth/access_token";
 
     @Override
     public ApiResponse googleOAuth2Service(GoogleOAuthRequest googleOAuthRequest) {
@@ -125,6 +140,74 @@ public class UserServiceImpl implements UserService {
                     .data(null)
                     .meta(Map.of("timestamp", System.currentTimeMillis()))
                     .build();
+        }
+    }
+
+    @Override
+    public ApiResponse exchangeCodeAndProcessGitHubOAuth(CodeRequest codeRequest) {
+        String accessToken = exchangeCodeForToken(codeRequest.getCode());
+
+        try {
+            // Verify GitHub access token and get user info
+            GithubUserInfo githubUserInfo = githubOAuthService.verifyAccessToken(accessToken);
+            // Process GitHub OAuth and Save User
+            GithubOAuthResponse githubOAuthResponse = authService.processGithubOAuth(githubUserInfo);
+
+            return ApiResponse.builder()
+                    .success(1)
+                    .code(200)
+                    .message("GitHub OAuth2 Successfully.")
+                    .data(githubOAuthResponse)
+                    .meta(Map.of("timestamp", System.currentTimeMillis()))
+                    .build();
+
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.builder()
+                    .success(0)
+                    .code(400)
+                    .message("Invalid GitHub token: " + e.getMessage())
+                    .data(null)
+                    .meta(Map.of("timestamp", System.currentTimeMillis()))
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.builder()
+                    .success(0)
+                    .code(500)
+                    .message("Internal server error: " + e.getMessage())
+                    .data(null)
+                    .meta(Map.of("timestamp", System.currentTimeMillis()))
+                    .build();
+        }
+    }
+
+    private String exchangeCodeForToken(final String code) {
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        Map<String , String > params = new HashMap<>();
+        params.put("client_id" , clientId);
+        params.put("client_secret", secretKey);
+        params.put("code" , code);
+
+        // Set headers to accept JSON
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(java.util.List.of(MediaType.APPLICATION_JSON));
+
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(params, headers);
+
+        // Call GitHub API
+        ResponseEntity<Map> response = restTemplate.exchange(
+                TOKEN_URL,
+                HttpMethod.POST,
+                request,
+                Map.class
+        );
+
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            return (String) response.getBody().get("access_token");
+        } else {
+            throw new RuntimeException("Failed to exchange code for access token: " + response.getStatusCode());
         }
     }
 

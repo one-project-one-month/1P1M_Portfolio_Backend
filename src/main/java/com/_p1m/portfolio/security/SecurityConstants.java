@@ -9,6 +9,7 @@ public class SecurityConstants {
             "/oauth2/**",
             "/login/oauth2/**",
             "/portfolio/api/v1/auth/users/githubOAuth2/**",
+            "/portfolio/api/v1/auth/users/exchange",
 
             // Swagger & API Docs
             "/swagger-ui/**",

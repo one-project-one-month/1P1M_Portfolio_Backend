@@ -1,6 +1,7 @@
 package com._p1m.portfolio.features.users.service;
 
 import com._p1m.portfolio.config.response.dto.ApiResponse;
+import com._p1m.portfolio.features.users.dto.request.CodeRequest;
 import com._p1m.portfolio.features.users.dto.request.GoogleOAuthRequest;
 import com._p1m.portfolio.features.users.dto.request.LoginRequest;
 import com._p1m.portfolio.features.users.dto.request.SignupRequest;
@@ -17,4 +18,6 @@ public interface UserService {
     ApiResponse googleOAuth2Service(@Valid GoogleOAuthRequest googleOAuthRequest);
 
     ApiResponse githubOAuth2Service(@Valid GithubOAuthRequest githubOAuthRequest);
+
+    ApiResponse exchangeCodeAndProcessGitHubOAuth(CodeRequest codeRequest);
 }
