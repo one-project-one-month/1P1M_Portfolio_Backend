@@ -11,11 +11,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -144,5 +147,32 @@ public class UserController {
         final ApiResponse response = userService.registerUser(signupRequest);
         return ResponseUtils.buildResponse(request , response);
     }
+
+    @Operation(
+            summary = "Send OTP Code to User",
+            description = "Send OTP Code to User",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Send OTP Code to User Request",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = OtpRequest.class))
+            ),
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Send OTP Code successfully"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
+            }
+    )
+    @PostMapping("send-otpCode")
+    public ResponseEntity<ApiResponse> sendOTPCode(@RequestBody OtpRequest otpRequest,
+                                                   HttpServletRequest request) throws MessagingException, IOException {
+        ApiResponse response = userService.sendOtpCode(otpRequest);
+        return ResponseUtils.buildResponse(request , response);
+    }
+
+    public ResponseEntity<ApiResponse> verifyOtpCode(@RequestBody VerifyOtpRequest verifyOtpRequest,
+                                                     HttpServletRequest request){
+        ApiResponse response = userService.verifyOtpCode(verifyOtpRequest);
+        return ResponseUtils.buildResponse(request , response);
+    }
+
 }
 

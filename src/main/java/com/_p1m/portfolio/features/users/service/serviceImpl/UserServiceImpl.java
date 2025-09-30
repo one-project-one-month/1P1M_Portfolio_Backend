@@ -1,5 +1,7 @@
 package com._p1m.portfolio.features.users.service.serviceImpl;
 
+import com._p1m.portfolio.common.component.OtpStore;
+import com._p1m.portfolio.common.util.ServerUtil;
 import com._p1m.portfolio.config.beans.AdminEmailConfig;
 import com._p1m.portfolio.config.response.dto.ApiResponse;
 import com._p1m.portfolio.data.enums.ROLE;
@@ -24,6 +26,7 @@ import com._p1m.portfolio.security.OAuth2.Google.dto.request.GoogleUserInfo;
 import com._p1m.portfolio.security.OAuth2.Google.dto.response.GoogleOAuthResponse;
 import com._p1m.portfolio.security.OAuth2.Google.service.ExchangeGoogleCodeService;
 import com._p1m.portfolio.security.OAuth2.Google.service.GoogleOAuthService;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,6 +37,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -54,6 +58,8 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final AuthenticationManager authManager;
     private final AdminEmailConfig adminEmailConfig;
+    private final ServerUtil serverUtil;
+    private final OtpStore otpStore;
 
     @Override
     public ApiResponse googleOAuth2Service(GoogleOAuthRequest googleOAuthRequest) {
@@ -184,7 +190,6 @@ public class UserServiceImpl implements UserService {
         if (userRepository.findByEmail(signupRequest.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
-
         String userName = signupRequest.getEmail().split("@")[0];
         User user = new User();
         user.setEmail(signupRequest.getEmail());
@@ -196,7 +201,17 @@ public class UserServiceImpl implements UserService {
         user.setRole(userRole);
         userRepository.save(user);
 
-        return null;
+        return ApiResponse.builder()
+                .success(1)
+                .code(200)
+                .message("Sign Up Successfully.")
+                .data(Map.of(
+                        "userId",user.getId(),
+                        "username", user.getUsername(),
+                        "email", user.getEmail()
+                ))
+                .meta(Map.of("timestamp", System.currentTimeMillis()))
+                .build();
     }
 
     @Override
@@ -249,6 +264,54 @@ public class UserServiceImpl implements UserService {
                 ))
                 .meta(Map.of("timestamp", System.currentTimeMillis()))
                 .build();
+    }
+
+    @Override
+    public ApiResponse sendOtpCode(OtpRequest otpRequest) throws IOException, MessagingException {
+        String email = otpRequest.getEmail();
+        String otpCode = serverUtil.generateNumericCode(6);
+        Optional<User>optionalUser = userRepository.findByEmail(otpRequest.getEmail());
+        if (optionalUser.isPresent()) {
+                return ApiResponse.builder()
+                        .success(0)
+                        .code(200)
+                        .message("Email is already registered in the system.")
+                        .meta(Map.of("timestamp", System.currentTimeMillis()))
+                        .build();
+        }
+        serverUtil.sendOtpCode(otpRequest.getEmail() , otpCode);
+        otpStore.saveOtp(email , otpCode , 15);
+
+        return ApiResponse.builder()
+                .success(1)
+                .code(200)
+                .message("Send OTP Code Successfully.")
+                .data(null)
+                .meta(Map.of("timestamp", System.currentTimeMillis()))
+                .build();
+    }
+
+    @Override
+    public ApiResponse verifyOtpCode(VerifyOtpRequest verifyOtpRequest) {
+        boolean valid = otpStore.verifyOtp(verifyOtpRequest.getEmail(), verifyOtpRequest.getOtpCode());
+
+        if (!valid) {
+            return ApiResponse.builder()
+                    .success(0)
+                    .code(400)
+                    .message("Invalid Request.")
+                    .data(null)
+                    .meta(Map.of("timestamp", System.currentTimeMillis()))
+                    .build();
+        }
+        return ApiResponse.builder()
+                .success(1)
+                .code(200)
+                .message("OTP verified successfully.")
+                .data(null)
+                .meta(Map.of("timestamp", System.currentTimeMillis()))
+                .build();
+
     }
 
     @Override
