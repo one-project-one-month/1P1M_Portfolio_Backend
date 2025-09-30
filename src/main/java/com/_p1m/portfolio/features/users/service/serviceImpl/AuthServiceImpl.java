@@ -1,5 +1,6 @@
 package com._p1m.portfolio.features.users.service.serviceImpl;
 
+import com._p1m.portfolio.config.response.dto.ApiResponse;
 import com._p1m.portfolio.data.models.OAuthUser;
 import com._p1m.portfolio.data.models.Role;
 import com._p1m.portfolio.data.models.User;
@@ -56,7 +57,35 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public GithubOAuthResponse processGithubOAuth(GithubUserInfo githubUserInfo) {
-        // Create a new user (no existing-user checks here)
+
+        Optional<User> existingUser = userRepository.findByEmail(githubUserInfo.getEmail());
+
+        if(existingUser.isPresent()){
+            User user = existingUser.get();
+
+            // Check if the User has already registered via Github
+            Optional<OAuthUser> existingOAuthUser = oAuthUserRepository.findByUserAndProvider(user, "GITHUB");
+
+            if(existingOAuthUser.isPresent()){
+                // User exists and was registered via GitHub - allow login
+                String jwtToken = jwtUtil.generateToken(
+                        user.getEmail() != null ? user.getEmail() : user.getUsername(),
+                        TOKEN_VALID_TIME_MILLIS
+                );
+
+                GithubOAuthResponse githubOAuthResponse = new GithubOAuthResponse();
+                githubOAuthResponse.setUser(mapUserToResponse(user));
+                githubOAuthResponse.setToken(jwtToken);
+                githubOAuthResponse.setNewUser(false);
+
+                return githubOAuthResponse; // IMPORTANT: Return here
+            } else {
+                // User exists but registered via different provider (Google)
+                throw new IllegalArgumentException("We have an account that is already registered with different Provider.");
+            }
+        }
+
+        // Create a new user (only reaches here if no existing user)
         User user = createUserFromGithub(githubUserInfo);
 
         // Create OAuthUser linked to this new user
@@ -67,7 +96,6 @@ public class AuthServiceImpl implements AuthService {
                 user.getEmail() != null ? user.getEmail() : user.getUsername(),
                 TOKEN_VALID_TIME_MILLIS
         );
-
         // Build response
         GithubOAuthResponse response = new GithubOAuthResponse();
         response.setUser(mapUserToResponse(user));

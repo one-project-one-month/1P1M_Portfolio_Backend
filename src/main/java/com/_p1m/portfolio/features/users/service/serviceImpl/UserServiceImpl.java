@@ -1,8 +1,10 @@
 package com._p1m.portfolio.features.users.service.serviceImpl;
 
 import com._p1m.portfolio.config.response.dto.ApiResponse;
+import com._p1m.portfolio.data.models.OAuthUser;
 import com._p1m.portfolio.data.models.User;
 import com._p1m.portfolio.data.models.Role;
+import com._p1m.portfolio.data.repositories.OAuthUserRepository;
 import com._p1m.portfolio.data.repositories.UserRepository;
 import com._p1m.portfolio.features.users.dto.request.*;
 import com._p1m.portfolio.features.users.dto.response.AuthResponse;
@@ -42,6 +44,8 @@ public class UserServiceImpl implements UserService {
     private final AuthService authService;
     private final ExchangeGitHubCodeService exchangeGitHubCodeService;
     private final ExchangeGoogleCodeService exchangeGoogleCodeService;
+    private final OAuthUserRepository oAuthUserRepository;
+
 
 
     @Override
@@ -187,21 +191,9 @@ public class UserServiceImpl implements UserService {
         try {
             // Verify GitHub access token and get user info
             GithubUserInfo githubUserInfo = githubOAuthService.verifyAccessToken(accessToken);
-
-            Optional<User> existingUser = userRepository.findByEmail(githubUserInfo.getEmail());
-            if(existingUser.isPresent()){
-                return ApiResponse.builder()
-                        .success(0)
-                        .code(200)
-                        .message("We already have a registered user with this email address.")
-                        .data(null)
-                        .meta(Map.of("timestamp", System.currentTimeMillis()))
-                        .build();
-
-            }
-
             // Process GitHub OAuth and Save User
             GithubOAuthResponse githubOAuthResponse = authService.processGithubOAuth(githubUserInfo);
+
             return ApiResponse.builder()
                     .success(1)
                     .code(200)
