@@ -150,17 +150,6 @@ public class UserServiceImpl implements UserService {
                 googleUserInfo = googleOAuthService.verifyAccessToken(accessToken);
             }
 
-            Optional<User> existingUser = userRepository.findByEmail(googleUserInfo.getEmail());
-            if(existingUser.isPresent()){
-                return ApiResponse.builder()
-                        .success(0)
-                        .code(200)
-                        .message("We already have a registered user with this email address.")
-                        .data(null)
-                        .meta(Map.of("timestamp", System.currentTimeMillis()))
-                        .build();
-            }
-
             // Process Google OAuth and Save User
             GoogleOAuthResponse googleOAuthResponse = authService.processGoogleOAuth(googleUserInfo);
 

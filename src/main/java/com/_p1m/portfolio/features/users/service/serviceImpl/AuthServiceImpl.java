@@ -37,6 +37,30 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public GoogleOAuthResponse processGoogleOAuth(GoogleUserInfo googleUserInfo) {
+
+        Optional<User> existingUser = userRepository.findByEmail(googleUserInfo.getEmail());
+        if(existingUser.isPresent()){
+            User user = existingUser.get();
+
+            // Check if the User has already registered via Google
+            Optional<OAuthUser> existingOAuthUser = oAuthUserRepository.findByUserAndProvider(user, "GOOGLE");
+            if(existingOAuthUser.isPresent()){
+                // User exists and was registered via Google - allow login
+                String jwtToken = jwtUtil.generateToken(
+                        user.getEmail() != null ? user.getEmail() : user.getUsername(),
+                        TOKEN_VALID_TIME_MILLIS
+                );
+                GoogleOAuthResponse googleOAuthResponse= new GoogleOAuthResponse();
+                googleOAuthResponse.setUser(mapUserToResponse(user));
+                googleOAuthResponse.setToken(jwtToken);
+                googleOAuthResponse.setNewUser(false);
+                return googleOAuthResponse;
+            } else {
+                // User exists but registered via different provider (GitHub)
+                throw new IllegalArgumentException("We have an account that is already registered with different Provider.");
+            }
+        }
+
         // Create a new user (no existing-user checks here)
         User user = createUserFromGoogle(googleUserInfo);
 
@@ -78,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
                 githubOAuthResponse.setToken(jwtToken);
                 githubOAuthResponse.setNewUser(false);
 
-                return githubOAuthResponse; // IMPORTANT: Return here
+                return githubOAuthResponse;
             } else {
                 // User exists but registered via different provider (Google)
                 throw new IllegalArgumentException("We have an account that is already registered with different Provider.");
