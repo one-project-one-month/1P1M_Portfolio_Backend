@@ -168,6 +168,20 @@ public class UserController {
         return ResponseUtils.buildResponse(request , response);
     }
 
+    @Operation(
+            summary = "Verify OTP Code",
+            description = "Verify OTP Code",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Verify OTP Code Request",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = VerifyOtpRequest.class))
+            ),
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OTP verified successfully."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
+            }
+    )
+    @PostMapping("verify-otpCode")
     public ResponseEntity<ApiResponse> verifyOtpCode(@RequestBody VerifyOtpRequest verifyOtpRequest,
                                                      HttpServletRequest request){
         ApiResponse response = userService.verifyOtpCode(verifyOtpRequest);
