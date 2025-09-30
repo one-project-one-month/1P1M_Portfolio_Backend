@@ -1,4 +1,4 @@
-package com._p1m.portfolio.features.createDevProfile.dto.request;
+package com._p1m.portfolio.features.devProfile.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

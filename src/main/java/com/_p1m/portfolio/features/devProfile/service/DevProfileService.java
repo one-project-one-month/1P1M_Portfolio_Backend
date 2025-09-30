@@ -1,12 +1,12 @@
-package com._p1m.portfolio.features.createDevProfile.service;
+package com._p1m.portfolio.features.devProfile.service;
 
 import com._p1m.portfolio.data.models.DevProfile;
 import com._p1m.portfolio.data.models.User;
 import com._p1m.portfolio.data.models.lookup.TechStack;
 import com._p1m.portfolio.data.repositories.DevProfileRepository;
 import com._p1m.portfolio.data.repositories.UserRepository;
-import com._p1m.portfolio.features.createDevProfile.dto.request.CreateDevProfileRequest;
-import com._p1m.portfolio.features.createDevProfile.repository.TechStackFinder;
+import com._p1m.portfolio.features.devProfile.dto.request.CreateDevProfileRequest;
+import com._p1m.portfolio.features.devProfile.repository.TechStackFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

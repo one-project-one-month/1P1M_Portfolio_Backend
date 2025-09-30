@@ -1,8 +1,8 @@
-package com._p1m.portfolio.features.createDevProfile.controller;
+package com._p1m.portfolio.features.devProfile.controller;
 
 import com._p1m.portfolio.data.models.DevProfile;
-import com._p1m.portfolio.features.createDevProfile.dto.request.CreateDevProfileRequest;
-import com._p1m.portfolio.features.createDevProfile.service.DevProfileService;
+import com._p1m.portfolio.features.devProfile.dto.request.CreateDevProfileRequest;
+import com._p1m.portfolio.features.devProfile.service.DevProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

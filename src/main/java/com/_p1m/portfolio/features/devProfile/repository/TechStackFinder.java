@@ -1,4 +1,4 @@
-package com._p1m.portfolio.features.createDevProfile.repository;
+package com._p1m.portfolio.features.devProfile.repository;
 
 import com._p1m.portfolio.data.models.lookup.TechStack;
 import com._p1m.portfolio.data.repositories.TechStackRepository;
