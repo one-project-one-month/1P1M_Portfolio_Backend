@@ -30,4 +30,6 @@ public interface UserService {
     ApiResponse sendOtpCode(OtpRequest otpRequest) throws IOException, MessagingException;
 
     ApiResponse verifyOtpCode(VerifyOtpRequest verifyOtpRequest);
+
+    ApiResponse checkEmailExistOrNot(@Valid CheckEmailRequest checkEmailRequest);
 }

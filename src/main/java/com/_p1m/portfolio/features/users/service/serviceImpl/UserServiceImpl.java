@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.client.RestTemplate;
 
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -308,6 +309,27 @@ public class UserServiceImpl implements UserService {
                 .success(1)
                 .code(200)
                 .message("OTP verified successfully.")
+                .data(null)
+                .meta(Map.of("timestamp", System.currentTimeMillis()))
+                .build();
+    }
+
+    @Override
+    public ApiResponse checkEmailExistOrNot(CheckEmailRequest checkEmailRequest) {
+        Optional<User> existingUser = userRepository.findByEmail(checkEmailRequest.getEmail());
+        if(existingUser.isPresent()){
+            return ApiResponse.builder()
+                    .success(1)
+                    .code(200)
+                        .message("Email Exists in the System.")
+                    .data(checkEmailRequest.getEmail())
+                    .meta(Map.of("timestamp", System.currentTimeMillis()))
+                    .build();
+        }
+        return ApiResponse.builder()
+                .success(0)
+                .code(200)
+                .message("Email does not Exist in the System.")
                 .data(null)
                 .meta(Map.of("timestamp", System.currentTimeMillis()))
                 .build();
