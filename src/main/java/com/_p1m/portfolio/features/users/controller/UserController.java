@@ -3,7 +3,6 @@ package com._p1m.portfolio.features.users.controller;
 import com._p1m.portfolio.config.response.dto.ApiResponse;
 import com._p1m.portfolio.config.response.utils.ResponseUtils;
 import com._p1m.portfolio.features.users.dto.request.*;
-import com._p1m.portfolio.features.users.dto.response.AuthResponse;
 import com._p1m.portfolio.features.users.service.UserService;
 
 import com._p1m.portfolio.security.OAuth2.Github.dto.request.GithubOAuthRequest;
@@ -15,6 +14,7 @@ import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +27,26 @@ import java.io.IOException;
 public class UserController {
 
     private final UserService userService;
+
+    @Operation(
+            summary = "Check Email Exists in the System or Not.",
+            description = "Check Email Exists in the System or Not.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Check Email Exists in the System or Not. Request",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = CheckEmailRequest.class))
+            ),
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Email Exists in the System."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Email does not Exist in the System.")
+            }
+    )
+    @PostMapping("checkEmail")
+    public ResponseEntity<ApiResponse> checkEmail(@Valid @RequestBody CheckEmailRequest checkEmailRequest ,
+                                                  HttpServletRequest request){
+        final ApiResponse response = userService.checkEmailExistOrNot(checkEmailRequest);
+        return ResponseUtils.buildResponse(request , response);
+    }
 
     @Operation(
             summary = "Login or Signup User Via Google",
