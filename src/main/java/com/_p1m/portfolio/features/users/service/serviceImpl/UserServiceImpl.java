@@ -1,10 +1,13 @@
 package com._p1m.portfolio.features.users.service.serviceImpl;
 
+import com._p1m.portfolio.config.beans.AdminEmailConfig;
 import com._p1m.portfolio.config.response.dto.ApiResponse;
+import com._p1m.portfolio.data.enums.ROLE;
 import com._p1m.portfolio.data.models.OAuthUser;
 import com._p1m.portfolio.data.models.User;
 import com._p1m.portfolio.data.models.Role;
 import com._p1m.portfolio.data.repositories.OAuthUserRepository;
+import com._p1m.portfolio.data.repositories.RoleRepository;
 import com._p1m.portfolio.data.repositories.UserRepository;
 import com._p1m.portfolio.features.users.dto.request.*;
 import com._p1m.portfolio.features.users.dto.response.AuthResponse;
@@ -23,6 +26,9 @@ import com._p1m.portfolio.security.OAuth2.Google.service.ExchangeGoogleCodeServi
 import com._p1m.portfolio.security.OAuth2.Google.service.GoogleOAuthService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
@@ -45,8 +51,9 @@ public class UserServiceImpl implements UserService {
     private final ExchangeGitHubCodeService exchangeGitHubCodeService;
     private final ExchangeGoogleCodeService exchangeGoogleCodeService;
     private final OAuthUserRepository oAuthUserRepository;
-
-
+    private final RoleRepository roleRepository;
+    private final AuthenticationManager authManager;
+    private final AdminEmailConfig adminEmailConfig;
 
     @Override
     public ApiResponse googleOAuth2Service(GoogleOAuthRequest googleOAuthRequest) {
@@ -173,6 +180,78 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public ApiResponse registerUser(SignupRequest signupRequest) {
+        if (userRepository.findByEmail(signupRequest.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        String userName = signupRequest.getEmail().split("@")[0];
+        User user = new User();
+        user.setEmail(signupRequest.getEmail());
+        user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
+        user.setUsername(userName);
+        // Fetch Role entity from DB
+        Role userRole = roleRepository.findByName("USER")
+                .orElseThrow(() -> new RuntimeException("USER role not found"));
+        user.setRole(userRole);
+        userRepository.save(user);
+
+        return null;
+    }
+
+    @Override
+    public ApiResponse loginUser(LoginRequest loginRequest) {
+
+        Optional<User> existingUser = userRepository.findByEmail(loginRequest.getEmail());
+        if(existingUser.isEmpty()){
+            return ApiResponse.builder()
+                    .success(0)
+                    .code(404)
+                    .message("User does not Exist in the System.")
+                    .data(loginRequest.getEmail())
+                    .meta(Map.of("timestamp", System.currentTimeMillis()))
+                    .build();
+        }
+        User user = existingUser.get();
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            return ApiResponse.builder()
+                    .success(0)
+                    .code(401)
+                    .message("Incorrect Credentials.")
+                    .meta(Map.of("timestamp", System.currentTimeMillis()))
+                    .build();
+        }
+
+        Authentication authentication = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail() , loginRequest.getPassword()));
+
+        String token = jwtUtil.generateToken(loginRequest.getEmail());
+
+        // Check if the Email is Admin or Not
+        long roleId = user.getRole().getId();
+        String roleName =user.getRole().getName();
+        if(adminEmailConfig.isAdmin(user.getEmail())){
+            roleId = 2L;
+            roleName = "ADMIN";
+        }
+
+        return ApiResponse.builder()
+                .success(1)
+                .code(200)
+                .message("Login Successfully.")
+                .data(Map.of(
+                        "userId",user.getId(),
+                        "username", user.getUsername(),
+                        "email", user.getEmail(),
+                        "roleId", roleId,
+                        "role",roleName,
+                        "token", token
+                ))
+                .meta(Map.of("timestamp", System.currentTimeMillis()))
+                .build();
+    }
+
+    @Override
     public ApiResponse exchangeCodeAndProcessGitHubOAuth(GithubCodeRequest githubCodeRequest) {
 
         String accessToken = exchangeGitHubCodeService.exchangeGithubCodeForToken(githubCodeRequest.getCode());
@@ -210,34 +289,5 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    @Override
-    public AuthResponse login(LoginRequest request) {
-        Optional<User> user = userRepository.findByEmail(request.getEmail());
-
-        if (user.isEmpty() || !passwordEncoder.matches(request.getPassword(), user.get().getPassword())) {
-            throw new RuntimeException("Invalid email or password");
-        }
-        String token = jwtUtil.generateToken(user.get().getEmail());
-        return new AuthResponse(token, user.get().getEmail());
-    }
-
-    @Override
-    public AuthResponse signup(SignupRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
-        }
-
-        User user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.builder().id(request.getRoleId()).build())
-                .build();
-
-        userRepository.save(user);
-
-        String token = jwtUtil.generateToken(user.getEmail());
-        return new AuthResponse(token, user.getEmail());
-    }
 }
 

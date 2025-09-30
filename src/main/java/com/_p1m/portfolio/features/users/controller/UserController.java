@@ -119,8 +119,10 @@ public class UserController {
             }
     )
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(userService.login(request));
+    public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest loginRequest,
+                                             HttpServletRequest request) {
+        final ApiResponse response = this.userService.loginUser(loginRequest);
+        return ResponseUtils.buildResponse(request , response);
     }
 
     @Operation(
@@ -137,8 +139,10 @@ public class UserController {
             }
     )
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> signup(@RequestBody SignupRequest request) {
-        return ResponseEntity.ok(userService.signup(request));
+    public ResponseEntity<ApiResponse> signup(@RequestBody SignupRequest signupRequest,
+                                              HttpServletRequest request) {
+        final ApiResponse response = userService.registerUser(signupRequest);
+        return ResponseUtils.buildResponse(request , response);
     }
 }
 

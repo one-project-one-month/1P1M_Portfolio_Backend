@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface UserService {
-    AuthResponse login(LoginRequest request);
-    AuthResponse signup(SignupRequest request);
+//    AuthResponse login(LoginRequest request);
+//    AuthResponse signup(SignupRequest request);
 
     ApiResponse googleOAuth2Service(@Valid GoogleOAuthRequest googleOAuthRequest);
 
@@ -19,4 +19,8 @@ public interface UserService {
     ApiResponse exchangeCodeAndProcessGitHubOAuth(GithubCodeRequest githubCodeRequest);
 
     ApiResponse exchangeCodeAndProcessGoogleOAuth(GoogleCodeRequest googlecodeRequest);
+
+    ApiResponse registerUser(SignupRequest signupRequest);
+
+    ApiResponse loginUser(LoginRequest request);
 }
