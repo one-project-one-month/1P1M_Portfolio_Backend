@@ -45,7 +45,7 @@ public class ServerUtil {
 
     public void sendOtpCode(String email , String otpCode ) throws IOException, MessagingException {
         String userName = email.split("@")[0];
-        String htmlTemplate = loadTemplate("templates/mailTemplates/sendOtpMail.html");
+        String htmlTemplate = loadTemplate("templates/sendOtpMail.html");
         String htmlContent =htmlTemplate
                 .replace("{{username}}" , userName)
                 .replace("{{code}}" , otpCode);
@@ -59,6 +59,9 @@ public class ServerUtil {
 
         helper.setText(htmlContent , true);
         helper.addInline("logoImage", new ClassPathResource("templates/logo/logo.png"));
+
+//        // ✅ Actually send the message
+//        javaMailSender.send(message);
 
         this.emailService.sendEmail(email, "Your One Project One Month Confirmation Code", htmlContent);
 

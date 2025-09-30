@@ -286,7 +286,7 @@ public class UserServiceImpl implements UserService {
                 .success(1)
                 .code(200)
                 .message("Send OTP Code Successfully.")
-                .data(null)
+                .data(otpRequest.getEmail())
                 .meta(Map.of("timestamp", System.currentTimeMillis()))
                 .build();
     }
@@ -311,7 +311,6 @@ public class UserServiceImpl implements UserService {
                 .data(null)
                 .meta(Map.of("timestamp", System.currentTimeMillis()))
                 .build();
-
     }
 
     @Override
