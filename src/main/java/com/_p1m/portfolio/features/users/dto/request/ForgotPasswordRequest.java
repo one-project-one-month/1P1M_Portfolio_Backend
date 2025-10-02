@@ -1,12 +1,10 @@
-package com._p1m.portfolio.features.forgotPassword.dto.request;
+package com._p1m.portfolio.features.users.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class ForgotPasswordRequest {
 
     @NotBlank(message = "Email is required.")

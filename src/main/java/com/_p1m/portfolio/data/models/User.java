@@ -4,9 +4,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com._p1m.portfolio.data.models.common.Auditable;
+import com._p1m.portfolio.data.enums.AuthProvider;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
@@ -46,5 +49,9 @@ public class User extends Auditable {
         inverseJoinColumns = @JoinColumn(name = "project_idea_id")
     )
     private Set<ProjectIdea> reactedProjectIdeas = new HashSet<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AuthProvider authProvider;
 }
 
