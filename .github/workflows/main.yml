@@ -5,14 +5,14 @@ on:
     branches:
       - main
       - staging
-      - develop
-      - 'ft*'
+      - dev
+      - ft*
   pull_request:
     branches:
       - main
       - staging
-      - develop
-      - 'ft*'
+      - dev
+      - ft*
   workflow_dispatch:
   
 concurrency:

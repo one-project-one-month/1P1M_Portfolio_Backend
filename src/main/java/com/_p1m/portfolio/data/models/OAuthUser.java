@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,14 +20,19 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Entity
 public class OAuthUser extends Auditable {
-	@Column(nullable = false)
-	private String username;
-	
-	@Column(nullable = false)
-	private String email;
-	
-	@Column(nullable = false)
-	private String password;
+//	@Column(nullable = false)
+//	private String username;
+//
+//	@Column(nullable = false)
+//	private String email;
+//
+//	@Column(nullable = false)
+//	private String password;
+
+    private String provider;
+    private String providerUserId;
+    private String profilePicture;
+    private boolean emailVerified;
 	
 	@OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")

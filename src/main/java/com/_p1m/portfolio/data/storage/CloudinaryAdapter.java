@@ -1,37 +1,29 @@
 package com._p1m.portfolio.data.storage;
 
-import com.cloudinary.Cloudinary;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.cloudinary.Cloudinary;
 
-@Service("cloudinaryStorageService")
-public class CloudinaryStorageService implements StorageService {
+import lombok.RequiredArgsConstructor;
+
+@Service
+@Profile("clouinary")
+@RequiredArgsConstructor
+public class CloudinaryAdapter implements CloudStorageService {
 
     private final Cloudinary cloudinary;
 
-    @Autowired
-    public CloudinaryStorageService(Cloudinary cloudinary) {
-        this.cloudinary = cloudinary;
-    }
-
     @Override
-    public void init() {
-
-    }
-
-    @Override
-    public String store(MultipartFile file) {
+    public String upload(MultipartFile file) {
         try {
             Map<String, Object> options = new HashMap<>();
-            options.put("folder", "food_ordering_system");
+            options.put("folder", "opom_portfolio");
             @SuppressWarnings("unchecked")
             Map<String, Object> uploadedFile = cloudinary.uploader().upload(file.getBytes(), options);
             String publicId = (String) uploadedFile.get("public_id");
@@ -42,18 +34,10 @@ public class CloudinaryStorageService implements StorageService {
     }
 
     @Override
-    public List<Path> loadAll() {
-        return List.of();
-    }
-
-    @Override
-    public Path load(String filename) {
-        return null;
-    }
-
-    @Override
-    public Resource loadAsResource(String filename) {
-        return null;
+    public String getImageUrl(String publicId) {
+        return cloudinary.url()
+                .secure(true)
+                .generate(publicId);
     }
 
     @Override
@@ -65,11 +49,6 @@ public class CloudinaryStorageService implements StorageService {
         } catch (IOException e) {
             throw new RuntimeException("Failed to delete from Cloudinary", e);
         }
-    }
-
-    @Override
-    public void deleteAll() {
-
     }
 
     @Override
