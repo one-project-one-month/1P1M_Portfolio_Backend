@@ -3,6 +3,7 @@ package com._p1m.portfolio.data.models;
 import com._p1m.portfolio.common.constant.Status;
 import com._p1m.portfolio.data.models.common.Auditable;
 
+import jakarta.persistence.*;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
@@ -43,5 +44,6 @@ public class OpomRegister extends Auditable {
     private DevProfile devProfile;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Status status;
 }
