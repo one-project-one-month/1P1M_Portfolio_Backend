@@ -60,24 +60,25 @@ public class AuthServiceImpl implements AuthService {
                 // User exists but registered via different provider (GitHub)
                 throw new IllegalArgumentException("We have an account that is already registered with different Provider.");
             }
+        } else {
+            // Create a new user (no existing-user checks here)
+            User user = createUserFromGoogle(googleUserInfo);
+
+            // Create OAuthUser linked to this new user
+            createGoogleOAuth(user, googleUserInfo);
+
+            // Generate JWT Token
+            String jwtToken =jwtUtil.generateToken(user.getEmail() , TOKEN_VALID_TIME_MILLIS);
+
+            // Building Response
+            GoogleOAuthResponse response= new GoogleOAuthResponse();
+            response.setUser(mapUserToResponse(user));
+            response.setToken(jwtToken);
+            response.setProfile_picture(googleUserInfo.getPicture());
+            response.setNewUser(true);
+
+            return response;
         }
-
-        // Create a new user (no existing-user checks here)
-        User user = createUserFromGoogle(googleUserInfo);
-
-        // Create OAuthUser linked to this new user
-        createGoogleOAuth(user, googleUserInfo);
-
-        // Generate JWT Token
-        String jwtToken =jwtUtil.generateToken(user.getEmail() , TOKEN_VALID_TIME_MILLIS);
-
-        // Building Response
-        GoogleOAuthResponse response= new GoogleOAuthResponse();
-        response.setUser(mapUserToResponse(user));
-        response.setToken(jwtToken);
-        response.setNewUser(true);
-
-        return response;
     }
 
     @Override
@@ -126,6 +127,7 @@ public class AuthServiceImpl implements AuthService {
             GithubOAuthResponse response = new GithubOAuthResponse();
             response.setUser(mapUserToResponse(user));
             response.setToken(jwtToken);
+            response.setProfile_picture(githubUserInfo.getAvatarUrl());
             response.setNewUser(true);
 
             return response;
