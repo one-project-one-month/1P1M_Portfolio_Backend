@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface ManageDevProfileService {
-   Page<DevProfile> findAllDevPf(Pageable pageable);
+   List<DevProfile> findAllDevPf();
 
    DevProfile findDevByName(String name);
 
@@ -16,4 +16,6 @@ public interface ManageDevProfileService {
    DevProfile findDevByGithub(String githubURL);
 
    void deleteDevPf(Long id);
+
+   DevProfile updateDevProfile(Long id, DevProfile devProfileDetails);
 }

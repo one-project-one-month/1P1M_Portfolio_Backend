@@ -13,7 +13,11 @@ public class SecurityConstants {
             "/portfolio/api/v1/auth/users/exchangeGoogle",
             "/portfolio/api/v1/auth/users/send-otpCode",
             "/portfolio/api/v1/auth/users/verify-otpCode",
-
+            "/portfolio/api/v1/auth/devProfile",
+            "/portfolio/api/v1/auth/devProfile/{name}",
+            "/portfolio/api/v1/auth/devProfile/linkedin/{linkedIn}",
+            "/portfolio/api/v1/auth/devProfile/github/{github}",
+            "/portfolio/api/v1/auth/devProfile/delete/{id}",
             // Swagger & API Docs
             "/swagger-ui/**",
             "/v3/api-docs/**",
