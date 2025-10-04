@@ -52,6 +52,7 @@ public class AuthServiceImpl implements AuthService {
                 );
                 GoogleOAuthResponse googleOAuthResponse= new GoogleOAuthResponse();
                 googleOAuthResponse.setUser(mapUserToResponse(user));
+                googleOAuthResponse.setProfile_picture(googleUserInfo.getPicture());
                 googleOAuthResponse.setToken(jwtToken);
                 googleOAuthResponse.setNewUser(false);
                 return googleOAuthResponse;
@@ -99,6 +100,7 @@ public class AuthServiceImpl implements AuthService {
 
                 GithubOAuthResponse githubOAuthResponse = new GithubOAuthResponse();
                 githubOAuthResponse.setUser(mapUserToResponse(user));
+                githubOAuthResponse.setProfile_picture(githubUserInfo.getAvatarUrl());
                 githubOAuthResponse.setToken(jwtToken);
                 githubOAuthResponse.setNewUser(false);
 
@@ -107,26 +109,27 @@ public class AuthServiceImpl implements AuthService {
                 // User exists but registered via different provider (Google)
                 throw new IllegalArgumentException("We have an account that is already registered with different Provider.");
             }
+        } else {
+            // Create a new user (only reaches here if no existing user)
+            User user = createUserFromGithub(githubUserInfo);
+
+            // Create OAuthUser linked to this new user
+            createGithubOAuth(user, githubUserInfo);
+
+            // Generate JWT token
+            String jwtToken = jwtUtil.generateToken(
+                    user.getEmail() != null ? user.getEmail() : user.getUsername(),
+                    TOKEN_VALID_TIME_MILLIS
+            );
+
+            // Build response
+            GithubOAuthResponse response = new GithubOAuthResponse();
+            response.setUser(mapUserToResponse(user));
+            response.setToken(jwtToken);
+            response.setNewUser(true);
+
+            return response;
         }
-
-        // Create a new user (only reaches here if no existing user)
-        User user = createUserFromGithub(githubUserInfo);
-
-        // Create OAuthUser linked to this new user
-        createGithubOAuth(user, githubUserInfo);
-
-        // Generate JWT token
-        String jwtToken = jwtUtil.generateToken(
-                user.getEmail() != null ? user.getEmail() : user.getUsername(),
-                TOKEN_VALID_TIME_MILLIS
-        );
-        // Build response
-        GithubOAuthResponse response = new GithubOAuthResponse();
-        response.setUser(mapUserToResponse(user));
-        response.setToken(jwtToken);
-        response.setNewUser(true);
-
-        return response;
     }
 
     private void updateGithubOAuth(OAuthUser oAuthUser, GithubUserInfo githubUser) {
