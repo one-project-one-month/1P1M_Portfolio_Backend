@@ -208,5 +208,37 @@ public class UserController {
         return ResponseUtils.buildResponse(request , response);
     }
 
+    @Operation(
+            summary = "Initiate password reset for a user",
+            description = "Sends an OTP code to the user's email if they are a registered local user.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "The user's email.",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = ForgotPasswordRequest.class))
+            )
+    )
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest,
+                                                      HttpServletRequest request) throws IOException, MessagingException {
+        ApiResponse response = userService.initiatePasswordReset(forgotPasswordRequest);
+        return ResponseUtils.buildResponse(request, response);
+    }
+
+    @Operation(
+            summary = "Reset user password using OTP",
+            description = "Sets a new password for the user after validating the OTP code.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "User's email, OTP code, and new password.",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = ResetPasswordRequest.class))
+            )
+    )
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest,
+                                                     HttpServletRequest request) {
+        ApiResponse response = userService.resetPassword(resetPasswordRequest);
+        return ResponseUtils.buildResponse(request, response);
+    }
+
 }
 
