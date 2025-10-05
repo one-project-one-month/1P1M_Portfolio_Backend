@@ -14,6 +14,8 @@ public class SecurityConstants {
             "/portfolio/api/v1/auth/users/send-otpCode",
             "/portfolio/api/v1/auth/users/verify-otpCode",
             "/portfolio/api/v1/auth/users/checkEmail",
+            "/portfolio/api/v1/auth/users/login",
+            "/portfolio/api/v1/auth/users/signup",
 
             // Swagger & API Docs
             "/swagger-ui/**",
