@@ -23,19 +23,19 @@ public class JWTUtil {
         return validHour * 60 * 60 * 1000L;
     }
 
-//    private Key getSigningKey(){
-//        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
-//    }
-
-    private Key getSigningKey() {
-        return Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private Key getSigningKey(){
+        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
+
+//    private Key getSigningKey() {
+//        return Keys.secretKeyFor(SignatureAlgorithm.HS256);
+//    }
 
     public String extractEmail(String token) throws ExpiredJwtException, JwtException{
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
-                .parseClaimsJwt(token)
+                .parseClaimsJws(token)
                 .getBody();
 
         // Adding Custom Claims ( Testing Yet :3)
@@ -43,11 +43,11 @@ public class JWTUtil {
         return (email != null) ? email : claims.getSubject();
     }
 
-    public boolean validateToken(String token , UserDetails userDetails){
+    public boolean validateToken(String token, UserDetails userDetails) {
         try {
             final String username = extractEmail(token);
-            return false;
-        }catch (JwtException e) {
+            return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        } catch (JwtException e) {
             return false;
         }
     }
@@ -75,16 +75,16 @@ public class JWTUtil {
                 .compact();
     }
 
-    private boolean isTokenExpired(final String token){
-        try{
-           Claims claims = Jwts.parserBuilder()
-                   .setSigningKey(getSigningKey())
-                   .build()
-                   .parseClaimsJwt(token)
-                   .getBody();
-           return claims.getExpiration().before(new Date());
-        }catch (JwtException e){
-            return  true;
+    private boolean isTokenExpired(final String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            return claims.getExpiration().before(new Date());
+        } catch (JwtException e) {
+            return true;
         }
     }
 }
