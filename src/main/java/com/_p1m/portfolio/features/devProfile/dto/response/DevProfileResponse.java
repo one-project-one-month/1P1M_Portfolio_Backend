@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,5 +17,5 @@ public class DevProfileResponse {
     private String profilePictureUrl;
     private String github;
     private String linkedIn;
-    private Set<String> techStacks;
+    private List<String> techStacks;
 }

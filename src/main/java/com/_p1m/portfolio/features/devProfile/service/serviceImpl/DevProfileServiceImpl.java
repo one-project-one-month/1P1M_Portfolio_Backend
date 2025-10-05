@@ -1,5 +1,6 @@
 package com._p1m.portfolio.features.devProfile.service.serviceImpl;
 
+import com._p1m.portfolio.config.response.dto.ApiResponse;
 import com._p1m.portfolio.data.models.DevProfile;
 import com._p1m.portfolio.data.models.User;
 import com._p1m.portfolio.data.models.lookup.TechStack;
@@ -10,11 +11,12 @@ import com._p1m.portfolio.data.repositories.DevProfileRepository;
 import com._p1m.portfolio.data.repositories.TechStackRepository;
 import com._p1m.portfolio.features.devProfile.service.DevProfileService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,7 +29,7 @@ public class DevProfileServiceImpl implements DevProfileService {
 
     @Override
     @Transactional
-    public DevProfileResponse createDevProfile(CreateDevProfileRequest request, Long userId) {
+    public ApiResponse createDevProfile(CreateDevProfileRequest request, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
@@ -35,11 +37,12 @@ public class DevProfileServiceImpl implements DevProfileService {
             throw new IllegalStateException("A developer profile for this user already exists.");
         }
 
-        Set<TechStack> resolvedTechStacks = new HashSet<>();
+        List<TechStack> resolvedTechStacks = new ArrayList<>();
         if (request.getTechStacks() != null && !request.getTechStacks().isEmpty()) {
-            resolvedTechStacks = request.getTechStacks().stream()
-                    .map(this::findOrCreateTechStack)
-                    .collect(Collectors.toSet());
+            for (String techStackName : request.getTechStacks()) {
+                TechStack resolvedTechStack = findOrCreateTechStack(techStackName);
+                resolvedTechStacks.add(resolvedTechStack);
+            }
         }
 
         DevProfile devProfile = DevProfile.builder()
@@ -51,8 +54,15 @@ public class DevProfileServiceImpl implements DevProfileService {
                 .techStacks(resolvedTechStacks)
                 .build();
 
-        DevProfile savedProfile = devProfileRepository.save(devProfile);
-        return mapToDevProfileResponse(savedProfile);
+        devProfileRepository.save(devProfile);
+        DevProfileResponse responseDto = mapToDevProfileResponse(devProfile);
+
+        return ApiResponse.builder()
+                .success(1)
+                .code(HttpStatus.CREATED.value())
+                .message("Developer profile created successfully.")
+                .data(responseDto)
+                .build();
     }
 
     private TechStack findOrCreateTechStack(String name) {
@@ -61,9 +71,9 @@ public class DevProfileServiceImpl implements DevProfileService {
     }
 
     private DevProfileResponse mapToDevProfileResponse(DevProfile profile) {
-        Set<String> techStackNames = profile.getTechStacks().stream()
+        List<String> techStackNames = profile.getTechStacks().stream()
                 .map(TechStack::getName)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
 
         return DevProfileResponse.builder()
                 .userId(profile.getUser().getId())
