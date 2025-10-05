@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.URL;
 
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -29,5 +29,5 @@ public class CreateDevProfileRequest {
     private String linkedIn;
 
     @NotEmpty(message = "At least one tech stack is required.")
-    private Set<String> techStacks;
+    private List<String> techStacks;
 }
