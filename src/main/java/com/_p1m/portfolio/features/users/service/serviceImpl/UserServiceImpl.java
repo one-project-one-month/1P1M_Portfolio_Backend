@@ -4,6 +4,7 @@ import com._p1m.portfolio.common.component.OtpStore;
 import com._p1m.portfolio.common.util.ServerUtil;
 import com._p1m.portfolio.config.beans.AdminEmailConfig;
 import com._p1m.portfolio.config.response.dto.ApiResponse;
+import com._p1m.portfolio.data.enums.AuthProvider;
 import com._p1m.portfolio.data.enums.ROLE;
 import com._p1m.portfolio.data.models.OAuthUser;
 import com._p1m.portfolio.data.models.User;
@@ -200,6 +201,7 @@ public class UserServiceImpl implements UserService {
         Role userRole = roleRepository.findByName("USER")
                 .orElseThrow(() -> new RuntimeException("USER role not found"));
         user.setRole(userRole);
+        user.setAuthProvider(AuthProvider.LOCAL);
         userRepository.save(user);
 
         return ApiResponse.builder()
@@ -371,6 +373,65 @@ public class UserServiceImpl implements UserService {
                     .meta(Map.of("timestamp", System.currentTimeMillis()))
                     .build();
         }
+    }
+
+    @Override
+    public ApiResponse initiatePasswordReset(ForgotPasswordRequest request) throws IOException, MessagingException {
+        Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
+
+        String successMessage = "If an account with this email exists, a password reset code has been sent.";
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            // Only allow password reset for users who signed up locally
+            if (user.getAuthProvider() != AuthProvider.LOCAL) {
+                return ApiResponse.builder()
+                        .success(1)
+                        .code(200)
+                        .message(successMessage)
+                        .build();
+            }
+
+            // User is LOCAL, proceed with sending an OTP
+            String email = user.getEmail();
+            String otpCode = serverUtil.generateNumericCode(6);
+
+            serverUtil.sendOtpCode(email, otpCode);
+            otpStore.saveOtp(email, otpCode, 15); // OTP valid for 15 minutes
+        }
+
+        return ApiResponse.builder()
+                .success(1)
+                .code(200)
+                .message(successMessage)
+                .build();
+    }
+
+    @Override
+    public ApiResponse resetPassword(ResetPasswordRequest request) {
+        boolean isValidOtp = otpStore.verifyOtp(request.getEmail(), request.getOtpCode());
+
+        if (!isValidOtp) {
+            return ApiResponse.builder()
+                    .success(0)
+                    .code(400)
+                    .message("Invalid or expired OTP code.")
+                    .build();
+        }
+
+        // OTP is valid, find the user and update their password
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Fatal: User not found after OTP validation."));
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        return ApiResponse.builder()
+                .success(1)
+                .code(200)
+                .message("Password has been reset successfully.")
+                .build();
     }
 
 }
