@@ -10,13 +10,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/portfolio/api/v1/profiles")
@@ -37,15 +35,11 @@ public class DevProfileController {
     )
     @PostMapping("/create")
     public ResponseEntity<ApiResponse> createDevProfile(
+            @Valid @PathVariable(name = "userId") Long userId,
             @Valid @RequestBody CreateDevProfileRequest request,
-            UserDetail userDetail,
             HttpServletRequest httpServletRequest) {
 
-        //Long userId = userDetail.getUser().getId();
-        Long userId = 1L;
-
         final ApiResponse response = devProfileService.createDevProfile(request, userId);
-
         return ResponseUtils.buildResponse(httpServletRequest, response);
     }
 }
