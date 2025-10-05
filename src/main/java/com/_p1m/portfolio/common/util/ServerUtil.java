@@ -13,6 +13,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -31,8 +32,9 @@ public class ServerUtil {
 
     public String loadTemplate(String path) throws IOException {
         ClassPathResource resource = new ClassPathResource(path);
-        byte[] bytes = Files.readAllBytes(resource.getFile().toPath());
-        return new String(bytes, StandardCharsets.UTF_8);
+        try (InputStream inputStream = resource.getInputStream()) {
+            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 
     public String generateNumericCode(int length) {
@@ -51,8 +53,7 @@ public class ServerUtil {
         String userName = email.split("@")[0];
         String htmlTemplate = loadTemplate("templates/sendOtpMail.html");
         String htmlContent =htmlTemplate
-                .replace("{{username}}" , userName)
-                .replace("{{code}}" , otpCode);
+                .replace("{{username}}" , userName);
 
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message , true , "UTF-8");
