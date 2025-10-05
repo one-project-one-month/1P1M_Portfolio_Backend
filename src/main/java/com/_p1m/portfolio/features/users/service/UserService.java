@@ -33,7 +33,7 @@ public interface UserService {
 
     ApiResponse checkEmailExistOrNot(@Valid CheckEmailRequest checkEmailRequest);
 
-    ApiResponse initiatePasswordReset(ForgotPasswordRequest request) throws IOException, MessagingException;
+    //ApiResponse initiatePasswordReset(ForgotPasswordRequest request) throws IOException, MessagingException;
 
-    ApiResponse resetPassword(ResetPasswordRequest request);
+    //ApiResponse resetPassword(ResetPasswordRequest request);
 }
