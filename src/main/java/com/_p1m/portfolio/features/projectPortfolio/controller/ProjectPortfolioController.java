@@ -72,7 +72,7 @@ public class ProjectPortfolioController {
         HttpServletRequest request
     )  {
     	String token = jwtUtil.extractTokenFromRequest(request);
-	    final ApiResponse response = this.projectPortfolioService.createProjectPortfolio(createRequest,"");
+	    final ApiResponse response = this.projectPortfolioService.createProjectPortfolio(createRequest,token);
 	    return ResponseUtils.buildResponse(request, response);
 	}
 }
