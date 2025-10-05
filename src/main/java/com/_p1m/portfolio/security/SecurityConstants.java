@@ -4,18 +4,7 @@ public class SecurityConstants {
 
     public static final String[] WHITELIST = {
             // Authentication & OAuth
-            "/api/v1/auth/**",
-            "/auth/user/**",
-            "/oauth2/**",
-            "/login/oauth2/**",
-            "/portfolio/api/v1/auth/users/githubOAuth2/**",
-            "/portfolio/api/v1/auth/users/exchangeGitHub",
-            "/portfolio/api/v1/auth/users/exchangeGoogle",
-            "/portfolio/api/v1/auth/users/send-otpCode",
-            "/portfolio/api/v1/auth/users/verify-otpCode",
-            "/portfolio/api/v1/auth/users/checkEmail",
-            "/portfolio/api/v1/auth/users/login",
-            "/portfolio/api/v1/auth/users/signup",
+            "/portfolio/api/v1/auth/**",
 
             // Swagger & API Docs
             "/swagger-ui/**",
