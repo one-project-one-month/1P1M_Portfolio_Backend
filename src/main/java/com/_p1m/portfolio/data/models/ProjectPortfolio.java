@@ -6,8 +6,10 @@ import java.util.Set;
 import com._p1m.portfolio.data.models.common.Auditable;
 import com._p1m.portfolio.data.models.lookup.LanguageAndTools;
 
+import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.Lob;
