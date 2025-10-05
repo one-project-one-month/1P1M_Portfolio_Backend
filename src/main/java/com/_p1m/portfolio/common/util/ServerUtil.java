@@ -53,17 +53,18 @@ public class ServerUtil {
         String userName = email.split("@")[0];
         String htmlTemplate = loadTemplate("templates/sendOtpMail.html");
         String htmlContent =htmlTemplate
-                .replace("{{username}}" , userName);
+                .replace("{{username}}" , userName)
+                .replace("{{code}}" , otpCode);
 
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message , true , "UTF-8");
 
         helper.setTo(email);
         helper.setFrom(fromMail);
-        helper.setSubject("Your One Project One Month Confirmation Code");
+        helper.setSubject("Your One_Project_One_Month Confirmation Code");
 
         helper.setText(htmlContent , true);
-        helper.addInline("logoImage", new ClassPathResource("templates/logo/logo.png"));
+//        helper.addInline("logoImage", new ClassPathResource("templates/logo/logo.png"));
 
 //        // ✅ Actually send the message
 //        javaMailSender.send(message);
