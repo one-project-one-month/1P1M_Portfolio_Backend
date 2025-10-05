@@ -2,6 +2,7 @@ package com._p1m.portfolio.common.util;
 
 
 import com._p1m.portfolio.common.service.EmailService;
+import com._p1m.portfolio.security.OAuth2.Github.dto.response.GithubOAuthResponse;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.Random;
 
 @Component
@@ -67,4 +70,26 @@ public class ServerUtil {
         this.emailService.sendEmail(email, "Your One Project One Month Confirmation Code", htmlContent);
 
     }
+
+    public void sendNewUserWelcomeMail(String email) throws IOException, MessagingException {
+        String userName = email.split("@")[0];
+
+        // Load the new welcome email template
+        String htmlTemplate = loadTemplate("templates/welcomeMail.html");
+
+        String htmlContent = htmlTemplate
+                .replace("{{username}}", userName);
+
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+        helper.setTo(email);
+        helper.setFrom(fromMail);
+        helper.setSubject("Welcome to One Project One Month! 🎉");
+        helper.setText(htmlContent, true);
+
+        // Send email
+        this.emailService.sendEmail(email, "Your One Project One Month Welcome Page", htmlContent);
+    }
+
 }
