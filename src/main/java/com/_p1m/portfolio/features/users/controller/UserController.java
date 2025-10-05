@@ -3,6 +3,7 @@ package com._p1m.portfolio.features.users.controller;
 import com._p1m.portfolio.config.response.dto.ApiResponse;
 import com._p1m.portfolio.config.response.utils.ResponseUtils;
 import com._p1m.portfolio.features.users.dto.request.*;
+import com._p1m.portfolio.features.users.service.PasswordResetService;
 import com._p1m.portfolio.features.users.service.UserService;
 
 import com._p1m.portfolio.security.OAuth2.Github.dto.request.GithubOAuthRequest;
@@ -27,6 +28,7 @@ import java.io.IOException;
 public class UserController {
 
     private final UserService userService;
+    private final PasswordResetService passwordResetService;
 
     @Operation(
             summary = "Check Email Exists in the System or Not.",
@@ -209,35 +211,63 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Initiate password reset for a user",
-            description = "Sends an OTP code to the user's email if they are a registered local user.",
+            summary = "Initiate Password Reset",
+            description = "Takes a user's email address. If the user exists, it generates a 6-digit OTP and sends it to their email. For security, it always returns a generic success message, regardless of whether the user was found.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "The user's email.",
+                    description = "Request containing the user's email address.",
                     required = true,
                     content = @Content(schema = @Schema(implementation = ForgotPasswordRequest.class))
-            )
+            ),
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Request processed successfully. A generic success message is always returned."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid email format.")
+            }
     )
-    @PostMapping("/forgot-password")
-    public ResponseEntity<ApiResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest,
-                                                      HttpServletRequest request) throws IOException, MessagingException {
-        ApiResponse response = userService.initiatePasswordReset(forgotPasswordRequest);
-        return ResponseUtils.buildResponse(request, response);
+    @PostMapping("/password/forgot")
+    public ResponseEntity<ApiResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request,
+                                                      HttpServletRequest httpServletRequest) throws Exception {
+        final ApiResponse response = passwordResetService.sendResetOtp(request);
+        return ResponseUtils.buildResponse(httpServletRequest, response);
     }
 
     @Operation(
-            summary = "Reset user password using OTP",
-            description = "Sets a new password for the user after validating the OTP code.",
+            summary = "Verify Password Reset OTP",
+            description = "Takes the user's email and the 6-digit OTP they received. It verifies if the OTP is correct and has not expired.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "User's email, OTP code, and new password.",
+                    description = "Request containing the user's email and the OTP code.",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = VerifyOtpRequest.class))
+            ),
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OTP verified successfully."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid or expired OTP code.")
+            }
+    )
+    @PostMapping("/password/verify-otp")
+    public ResponseEntity<ApiResponse> verifyPasswordOtp(@Valid @RequestBody VerifyOtpRequest request,
+                                                         HttpServletRequest httpServletRequest) {
+        final ApiResponse response = passwordResetService.verifyResetOtp(request);
+        return ResponseUtils.buildResponse(httpServletRequest, response);
+    }
+
+    @Operation(
+            summary = "Reset User's Password",
+            description = "Takes the user's email and their new password. This endpoint should only be called after a successful OTP verification. It sets and securely hashes the new password for the user.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Request containing the user's email and their new password.",
                     required = true,
                     content = @Content(schema = @Schema(implementation = ResetPasswordRequest.class))
-            )
+            ),
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Password has been reset successfully."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found (should not happen in a normal flow).")
+            }
     )
-    @PostMapping("/reset-password")
-    public ResponseEntity<ApiResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest,
-                                                     HttpServletRequest request) {
-        ApiResponse response = userService.resetPassword(resetPasswordRequest);
-        return ResponseUtils.buildResponse(request, response);
+    @PostMapping("/password/reset")
+    public ResponseEntity<ApiResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request,
+                                                     HttpServletRequest httpServletRequest) {
+        final ApiResponse response = passwordResetService.resetPassword(request);
+        return ResponseUtils.buildResponse(httpServletRequest, response);
     }
 
 }
