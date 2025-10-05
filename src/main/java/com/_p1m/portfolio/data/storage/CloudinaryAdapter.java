@@ -13,7 +13,7 @@ import com.cloudinary.Cloudinary;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@Profile("clouinary")
+@Profile("cloudinary")
 @RequiredArgsConstructor
 public class CloudinaryAdapter implements CloudStorageService {
 

@@ -31,5 +31,5 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: test/test-system:latest
+          tags: hlyamhtet/opom-portfolio:latest
 
