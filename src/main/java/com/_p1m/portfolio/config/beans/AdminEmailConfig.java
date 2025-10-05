@@ -18,7 +18,7 @@ public class AdminEmailConfig {
     @PostConstruct
     public void loadAdminEmails() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
-        try (InputStream inputStream = getClass().getResourceAsStream("/jsonFiles/admin_Emails.json")) {
+        try (InputStream inputStream = getClass().getResourceAsStream("/jsonFiles/admins.json")) {
             AdminEmailsWrapper wrapper = objectMapper.readValue(inputStream, AdminEmailsWrapper.class);
             this.adminEmails = wrapper.getAdmins();
         }

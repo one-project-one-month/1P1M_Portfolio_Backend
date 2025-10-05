@@ -246,10 +246,10 @@ public class UserServiceImpl implements UserService {
         // Check if the Email is Admin or Not
         long roleId = user.getRole().getId();
         String roleName =user.getRole().getName();
-        if(adminEmailConfig.isAdmin(user.getEmail())){
-            roleId = 2L;
-            roleName = "ADMIN";
-        }
+//        if(adminEmailConfig.isAdmin(user.getEmail())){
+//            roleId = 2L;
+//            roleName = "ADMIN";
+//        }
 
         return ApiResponse.builder()
                 .success(1)
@@ -372,6 +372,5 @@ public class UserServiceImpl implements UserService {
                     .build();
         }
     }
-
 }
 

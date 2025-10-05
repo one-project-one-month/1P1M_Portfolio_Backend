@@ -32,4 +32,8 @@ public interface UserService {
     ApiResponse verifyOtpCode(VerifyOtpRequest verifyOtpRequest);
 
     ApiResponse checkEmailExistOrNot(@Valid CheckEmailRequest checkEmailRequest);
+
+    //ApiResponse initiatePasswordReset(ForgotPasswordRequest request) throws IOException, MessagingException;
+
+    //ApiResponse resetPassword(ResetPasswordRequest request);
 }

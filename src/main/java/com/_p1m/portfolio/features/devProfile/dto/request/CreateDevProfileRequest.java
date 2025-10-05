@@ -2,16 +2,14 @@ package com._p1m.portfolio.features.devProfile.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.validator.constraints.URL;
 
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateDevProfileRequest {
@@ -29,5 +27,5 @@ public class CreateDevProfileRequest {
     private String linkedIn;
 
     @NotEmpty(message = "At least one tech stack is required.")
-    private Set<String> techStacks;
+    private List<String> techStacks;
 }

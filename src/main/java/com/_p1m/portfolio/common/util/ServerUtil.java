@@ -13,6 +13,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -31,8 +32,9 @@ public class ServerUtil {
 
     public String loadTemplate(String path) throws IOException {
         ClassPathResource resource = new ClassPathResource(path);
-        byte[] bytes = Files.readAllBytes(resource.getFile().toPath());
-        return new String(bytes, StandardCharsets.UTF_8);
+        try (InputStream inputStream = resource.getInputStream()) {
+            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 
     public String generateNumericCode(int length) {
@@ -59,10 +61,10 @@ public class ServerUtil {
 
         helper.setTo(email);
         helper.setFrom(fromMail);
-        helper.setSubject("Your One Project One Month Confirmation Code");
+        helper.setSubject("Your One_Project_One_Month Confirmation Code");
 
         helper.setText(htmlContent , true);
-        helper.addInline("logoImage", new ClassPathResource("templates/logo/logo.png"));
+//        helper.addInline("logoImage", new ClassPathResource("templates/logo/logo.png"));
 
 //        // ✅ Actually send the message
 //        javaMailSender.send(message);
