@@ -1,28 +1,45 @@
 package com._p1m.portfolio.features.devProfile.controller;
 
-import com._p1m.portfolio.data.models.DevProfile;
+import com._p1m.portfolio.config.response.dto.ApiResponse;
+import com._p1m.portfolio.config.response.utils.ResponseUtils;
+import com._p1m.portfolio.data.models.UserDetail;
 import com._p1m.portfolio.features.devProfile.dto.request.CreateDevProfileRequest;
 import com._p1m.portfolio.features.devProfile.service.DevProfileService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/profiles")
+@RequestMapping("/portfolio/api/v1/profiles")
 @RequiredArgsConstructor
+@Tag(name = "Developer Profile", description = "Endpoints for managing developer profiles")
 public class DevProfileController {
 
     private final DevProfileService devProfileService;
+    @Operation(
+            summary = "Create a Developer Profile",
+            description = "Creates a new developer profile for the currently authenticated user. A user can only have one profile.",
+            security = @SecurityRequirement(name = "Bearer Authentication"),
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Profile created successfully"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid input data or if a profile already exists for the user"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "User is not authenticated")
+            }
+    )
+    @PostMapping("/create")
+    public ResponseEntity<ApiResponse> createDevProfile(
+            @Valid @PathVariable(name = "userId") Long userId,
+            @Valid @RequestBody CreateDevProfileRequest request,
+            HttpServletRequest httpServletRequest) {
 
-    @PostMapping
-    public ResponseEntity<DevProfile> createDevProfile(@Valid @RequestBody CreateDevProfileRequest request) {
-        // TODO: Replace with ID from authenticated user once Spring Security is implemented
-        Long currentUserId = 1L;
-
-        DevProfile createdProfile = devProfileService.createDevProfile(request, currentUserId);
-
-        return new ResponseEntity<>(createdProfile, HttpStatus.CREATED);
+        final ApiResponse response = devProfileService.createDevProfile(request, userId);
+        return ResponseUtils.buildResponse(httpServletRequest, response);
     }
 }

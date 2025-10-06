@@ -2,6 +2,7 @@ package com._p1m.portfolio.common.util;
 
 
 import com._p1m.portfolio.common.service.EmailService;
+import com._p1m.portfolio.security.OAuth2.Github.dto.response.GithubOAuthResponse;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +13,11 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.Random;
 
 @Component
@@ -28,8 +32,9 @@ public class ServerUtil {
 
     public String loadTemplate(String path) throws IOException {
         ClassPathResource resource = new ClassPathResource(path);
-        byte[] bytes = Files.readAllBytes(resource.getFile().toPath());
-        return new String(bytes, StandardCharsets.UTF_8);
+        try (InputStream inputStream = resource.getInputStream()) {
+            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 
     public String generateNumericCode(int length) {
@@ -56,10 +61,10 @@ public class ServerUtil {
 
         helper.setTo(email);
         helper.setFrom(fromMail);
-        helper.setSubject("Your One Project One Month Confirmation Code");
+        helper.setSubject("Your One_Project_One_Month Confirmation Code");
 
         helper.setText(htmlContent , true);
-        helper.addInline("logoImage", new ClassPathResource("templates/logo/logo.png"));
+//        helper.addInline("logoImage", new ClassPathResource("templates/logo/logo.png"));
 
 //        // ✅ Actually send the message
 //        javaMailSender.send(message);
@@ -67,4 +72,26 @@ public class ServerUtil {
         this.emailService.sendEmail(email, "Your One Project One Month Confirmation Code", htmlContent);
 
     }
+
+    public void sendNewUserWelcomeMail(String email) throws IOException, MessagingException {
+        String userName = email.split("@")[0];
+
+        // Load the new welcome email template
+        String htmlTemplate = loadTemplate("templates/welcomeMail.html");
+
+        String htmlContent = htmlTemplate
+                .replace("{{username}}", userName);
+
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+        helper.setTo(email);
+        helper.setFrom(fromMail);
+        helper.setSubject("Welcome to One Project One Month! 🎉");
+        helper.setText(htmlContent, true);
+
+        // Send email
+        this.emailService.sendEmail(email, "Your One Project One Month Welcome Page", htmlContent);
+    }
+
 }

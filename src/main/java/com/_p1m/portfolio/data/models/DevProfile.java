@@ -1,7 +1,7 @@
 package com._p1m.portfolio.data.models;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import com._p1m.portfolio.data.models.common.Auditable;
 import com._p1m.portfolio.data.models.lookup.TechStack;
@@ -44,6 +44,6 @@ public class DevProfile extends Auditable {
         joinColumns = @JoinColumn(name = "dev_id"),
         inverseJoinColumns = @JoinColumn(name = "techstack_id")
     )
-    private Set<TechStack> techStacks = new HashSet<>();
+    private List<TechStack> techStacks = new ArrayList<>();
 }
 

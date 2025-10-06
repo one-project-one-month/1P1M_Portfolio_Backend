@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 public class GithubOAuthResponse {
     private Object user;
     private String token; // JWT token
+    private String profile_picture;
     private boolean newUser;
 }
