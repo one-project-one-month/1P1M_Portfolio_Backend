@@ -1,13 +1,19 @@
-package com._p1m.portfolio.features.ManageDevProfile.dto.request;
+package com._p1m.portfolio.features.devProfile.dto.request;
 
-import com._p1m.portfolio.data.models.User;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.*;
 import org.hibernate.validator.constraints.URL;
 
-import java.util.Set;
+import java.util.List;
 
-public class ManageDevProfileRequest {
+@Getter
+@Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class DevProfileRequest {
+
     @NotBlank(message = "Name is required.")
     private String name;
 
@@ -20,9 +26,6 @@ public class ManageDevProfileRequest {
     @URL(message = "Please provide a valid LinkedIn profile URL.")
     private String linkedIn;
 
-    @NotEmpty(message = "User Required")
-    private User user;
-
     @NotEmpty(message = "At least one tech stack is required.")
-    private Set<String> techStacks;
+    private List<String> techStacks;
 }

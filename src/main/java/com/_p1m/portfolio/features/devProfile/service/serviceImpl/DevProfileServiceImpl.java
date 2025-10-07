@@ -1,11 +1,13 @@
 package com._p1m.portfolio.features.devProfile.service.serviceImpl;
 
 import com._p1m.portfolio.config.response.dto.ApiResponse;
+import com._p1m.portfolio.config.response.dto.PaginatedApiResponse;
+import com._p1m.portfolio.config.response.dto.PaginationMeta;
 import com._p1m.portfolio.data.models.DevProfile;
 import com._p1m.portfolio.data.models.User;
 import com._p1m.portfolio.data.models.lookup.TechStack;
 import com._p1m.portfolio.data.repositories.UserRepository;
-import com._p1m.portfolio.features.devProfile.dto.request.CreateDevProfileRequest;
+import com._p1m.portfolio.features.devProfile.dto.request.DevProfileRequest;
 import com._p1m.portfolio.features.devProfile.dto.response.DevProfileResponse;
 import com._p1m.portfolio.data.repositories.DevProfileRepository;
 import com._p1m.portfolio.data.repositories.TechStackRepository;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,7 +32,7 @@ public class DevProfileServiceImpl implements DevProfileService {
 
     @Override
     @Transactional
-    public ApiResponse createDevProfile(CreateDevProfileRequest request, Long userId) {
+    public ApiResponse createDevProfile(DevProfileRequest request, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
@@ -63,6 +66,116 @@ public class DevProfileServiceImpl implements DevProfileService {
                 .message("Developer profile created successfully.")
                 .data(responseDto)
                 .build();
+    }
+
+    @Override
+    public PaginatedApiResponse<DevProfileRequest> findAllDevPf() {
+
+        List<DevProfile> developers = devProfileRepository.findAll();
+        List<DevProfileRequest> developerDtos = new ArrayList<>();
+
+        PaginationMeta emptyMeta = PaginationMeta.builder()
+                .method("GET")
+                .endpoint("/portfolio/api/v1/auth/devProfile")
+                .totalItems(0)
+                .totalPages(0)
+                .currentPage(0)
+                .build();
+
+        if (!developers.isEmpty()) {
+            developerDtos = developers.stream()
+                    .map(dev -> {
+                        DevProfileRequest requestDto = new DevProfileRequest();
+                        requestDto.setName(dev.getName());
+                        requestDto.setProfilePictureUrl(dev.getProfilePictureUrl());
+                        requestDto.setGithub(dev.getGithub());
+                        requestDto.setLinkedIn(dev.getLinkedIn());
+
+                        List<String> techStackNames = dev.getTechStacks().stream()
+                                .map(TechStack::getName)
+                                .collect(Collectors.toList());
+                        requestDto.setTechStacks(techStackNames);
+                        return requestDto;
+                    })
+                    .collect(Collectors.toList());
+
+
+            PaginationMeta populatedMeta = emptyMeta.toBuilder()
+                    .totalItems(developers.size())
+                    .build();
+
+            return PaginatedApiResponse.<DevProfileRequest>builder()
+                    .success(1)
+                    .code(HttpStatus.OK.value())
+                    .message("Developer profiles fetched successfully. Total: " + developers.size())
+                    .data(developerDtos)
+                    .meta(populatedMeta)
+                    .build();
+            }
+        return PaginatedApiResponse.<DevProfileRequest>builder()
+                .success(1)
+                .code(HttpStatus.OK.value())
+                .message("No developer profiles found.")
+                .data(developerDtos)
+                .meta(emptyMeta)
+                .build();
+
+
+    }
+
+    @Override
+    public ApiResponse findDevById(Long id) {
+        Optional<DevProfile> newDev = devProfileRepository.findById(id);
+        if (newDev.isEmpty()) {
+            return ApiResponse.builder()
+                    .success(0)
+                    .code(HttpStatus.NOT_FOUND.value())
+                    .message("Developer profile not found with id: " + id)
+                    .data(null)
+                    .build();
+        } else {
+            DevProfileResponse responseDto = mapToDevProfileResponse(newDev.get());
+            return ApiResponse.builder()
+                    .success(1)
+                    .code(HttpStatus.OK.value())
+                    .message("Developer profile fetched successfully.")
+                    .data(responseDto)
+                    .build();
+        }
+
+    }
+
+    @Override
+    public ApiResponse findDevByName(String name) {
+        Optional<DevProfile> developer = devProfileRepository.findByName(name);
+        if (developer.isEmpty()) {
+            return ApiResponse.builder()
+                    .success(0)
+                    .code(HttpStatus.NOT_FOUND.value())
+                    .message("Developer profile not found with name: " + name)
+                    .data(null)
+                    .build();
+        } else {
+            DevProfileResponse responseDto = mapToDevProfileResponse(developer.get());
+            return ApiResponse.builder()
+                    .success(1)
+                    .code(HttpStatus.OK.value())
+                    .message("Developer profile fetched successfully.")
+                    .data(responseDto)
+                    .build();
+        }
+    }
+
+    @Override
+    public ApiResponse deleteDevProfile(Long id) {
+        devProfileRepository.deleteById(id);
+        return ApiResponse.builder()
+                .success(1)
+                .code(HttpStatus.OK.value())
+                .message("Developer profile deleted successfully.")
+                .data(null)
+                .build();
+
     }
 
     private TechStack findOrCreateTechStack(String name) {
