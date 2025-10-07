@@ -4,12 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com._p1m.portfolio.data.models.common.Auditable;
-import com._p1m.portfolio.data.enums.AuthProvider;
 
 
-<<<<<<< Updated upstream
 import jakarta.persistence.*;
-=======
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -19,7 +16,6 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
->>>>>>> Stashed changes
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,10 +42,6 @@ public class User extends Auditable {
     @ManyToOne
     @JoinColumn(name = "role_id", referencedColumnName = "id")
     private Role role;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private AuthProvider authProvider;
     
     @ManyToMany
     @JoinTable(
