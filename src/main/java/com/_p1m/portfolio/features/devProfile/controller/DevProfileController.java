@@ -33,9 +33,9 @@ public class DevProfileController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "User is not authenticated")
             }
     )
-    @PostMapping("/create")
+    @PostMapping("/create/{id}")
     public ResponseEntity<ApiResponse> createDevProfile(
-            @Valid @PathVariable(name = "userId") Long userId,
+            @Valid @PathVariable(name = "id") Long userId,
             @Valid @RequestBody CreateDevProfileRequest request,
             HttpServletRequest httpServletRequest) {
 
