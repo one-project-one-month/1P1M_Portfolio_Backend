@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ProjectIdeaCRImpl implements ProjectIdeaCRService {
-
+    private final
     @Override
     public ApiResponse createProjectIdea(ProjectIdeaCRRequest projectIdea) {
         return null;
