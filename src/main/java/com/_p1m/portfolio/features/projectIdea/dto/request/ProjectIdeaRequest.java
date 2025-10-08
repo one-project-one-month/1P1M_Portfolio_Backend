@@ -1,4 +1,4 @@
-package com._p1m.portfolio.features.projectIdeaCR.dto.request;
+package com._p1m.portfolio.features.projectIdea.dto.request;
 
 import com._p1m.portfolio.data.models.DevProfile;
 import com._p1m.portfolio.data.models.User;
@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-public class ProjectIdeaCRRequest {
+public class ProjectIdeaRequest {
 
     @NotBlank(message = "Name is required and cannot be blank.")
     private String name;

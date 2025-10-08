@@ -1,16 +1,15 @@
-package com._p1m.portfolio.features.projectIdeaCR.serviceImpl;
+package com._p1m.portfolio.features.projectIdea.serviceImpl;
 
 import com._p1m.portfolio.config.response.dto.ApiResponse;
-import com._p1m.portfolio.data.models.ProjectIdea;
-import com._p1m.portfolio.features.projectIdeaCR.dto.request.ProjectIdeaCRRequest;
-import com._p1m.portfolio.features.projectIdeaCR.service.ProjectIdeaCRService;
+import com._p1m.portfolio.features.projectIdea.dto.request.ProjectIdeaRequest;
+import com._p1m.portfolio.features.projectIdea.service.ProjectIdeaCRService;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ProjectIdeaCRImpl implements ProjectIdeaCRService {
     private final
     @Override
-    public ApiResponse createProjectIdea(ProjectIdeaCRRequest projectIdea) {
+    public ApiResponse createProjectIdea(ProjectIdeaRequest projectIdea) {
         return null;
     }
 }

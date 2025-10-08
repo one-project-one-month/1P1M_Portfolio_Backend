@@ -1,4 +1,4 @@
-package com._p1m.portfolio.features.projectIdeaCR.dto.response;
+package com._p1m.portfolio.features.projectIdea.dto.response;
 
-public class ProjectIdeaCRResponse {
+public class ProjectIdeaResponse {
 }
