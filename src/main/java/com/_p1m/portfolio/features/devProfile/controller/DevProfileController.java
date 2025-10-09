@@ -78,6 +78,11 @@ public class DevProfileController {
         return ResponseUtils.buildResponse(request, response);
     }
 
+    @GetMapping("/techStack/{techStack}")
+    public ResponseEntity<PaginatedApiResponse<DevProfile>> getDevProfilesByTechStack(@PathVariable @Valid String techStack, HttpServletRequest request) {
+        PaginatedApiResponse<DevProfile> response = devProfileService.findByTechStack(techStack);
+        return ResponseUtils.buildPaginatedResponse(request,response);
+    }
     @Operation(summary = "Delete developer profile by ID",
             description = "Deletes a developer profile based on the provided ID.",
             responses = {

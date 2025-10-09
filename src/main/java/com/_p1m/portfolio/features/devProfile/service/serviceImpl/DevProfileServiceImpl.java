@@ -178,6 +178,57 @@ public class DevProfileServiceImpl implements DevProfileService {
 
     }
 
+    @Override
+    public PaginatedApiResponse<DevProfile> findByTechStack(String techStack) {
+        Optional<TechStack> stack = techStackRepository.findByNameIgnoreCase(techStack);
+        if(stack.isPresent()){
+            List<DevProfile> developers = devProfileRepository.findByTechStacks(stack);
+            if (!developers.isEmpty()) {
+                return PaginatedApiResponse.<DevProfile>builder()
+                        .success(1)
+                        .code(HttpStatus.OK.value())
+                        .message("Developer profiles fetched successfully. Total: " + developers.size())
+                        .data(developers)
+                        .meta(PaginationMeta.builder()
+                                .method("GET")
+                                .endpoint("/portfolio/api/v1/auth/devProfile/techStack/" + techStack)
+                                .totalItems(developers.size())
+                                .totalPages(1)
+                                .currentPage(1)
+                                .build())
+                        .build();
+            } else {
+                return PaginatedApiResponse.<DevProfile>builder()
+                        .success(1)
+                        .code(HttpStatus.OK.value())
+                        .message("No developer profiles found for tech stack: " + techStack)
+                        .data(new ArrayList<>())
+                        .meta(PaginationMeta.builder()
+                                .method("GET")
+                                .endpoint("/portfolio/api/v1/auth/devProfile/techStack/" + techStack)
+                                .totalItems(0)
+                                .totalPages(0)
+                                .currentPage(0)
+                                .build())
+                        .build();
+            }
+
+        }
+        return PaginatedApiResponse.<DevProfile>builder()
+                .success(0)
+                .code(HttpStatus.NOT_FOUND.value())
+                .message("Tech stack not found: " + techStack)
+                .data(new ArrayList<>())
+                .meta(PaginationMeta.builder()
+                        .method("GET")
+                        .endpoint("/portfolio/api/v1/auth/devProfile/techStack/" + techStack)
+                        .totalItems(0)
+                        .totalPages(0)
+                        .currentPage(0)
+                        .build())
+                .build();
+    }
+
     private TechStack findOrCreateTechStack(String name) {
         return techStackRepository.findByNameIgnoreCase(name)
                 .orElseGet(() -> techStackRepository.save(TechStack.builder().name(name).build()));

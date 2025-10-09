@@ -12,6 +12,6 @@ public interface DevProfileService {
     ApiResponse findDevByName(String name);
 
     ApiResponse deleteDevProfile(Long id);
-//    ApiResponse findByRole(String role);
 
+    PaginatedApiResponse<DevProfile> findByTechStack(String techStack);
 }
