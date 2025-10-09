@@ -4,8 +4,20 @@ public class SecurityConstants {
 
     public static final String[] WHITELIST = {
             // Authentication & OAuth
-            "/portfolio/api/v1/auth/**",
-            "/portfolio/api/v1/**",//this is so wrong, need to fix immediately :::::-0
+            "/api/v1/auth/**",
+            "/auth/user/**",
+            "/oauth2/**",
+            "/login/oauth2/**",
+            "/portfolio/api/v1/auth/users/githubOAuth2/**",
+            "/portfolio/api/v1/auth/users/exchangeGitHub",
+            "/portfolio/api/v1/auth/users/exchangeGoogle",
+            "/portfolio/api/v1/auth/users/send-otpCode",
+            "/portfolio/api/v1/auth/users/verify-otpCode",
+            "/portfolio/api/v1/auth/devProfile",
+            "/portfolio/api/v1/auth/devProfile/{name}",
+            "/portfolio/api/v1/auth/devProfile/linkedin/{linkedIn}",
+            "/portfolio/api/v1/auth/devProfile/github/{github}",
+            "/portfolio/api/v1/auth/devProfile/delete/{id}",
             // Swagger & API Docs
             "/swagger-ui/**",
             "/v3/api-docs/**",
