@@ -34,15 +34,15 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Table(name="users")
 public class User extends Auditable {
-	@Column(nullable = false)
+    @Column(nullable = false)
     private String username;
-    
-	@Column(nullable = false)
+
+    @Column(nullable = false)
     private String email;
-    
-	@Column(nullable = false)
+
+    @Column(nullable = false)
     private String password;
-    
+
     @ManyToOne
     @JoinColumn(name = "role_id", referencedColumnName = "id")
     private Role role;
@@ -50,13 +50,12 @@ public class User extends Auditable {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AuthProvider authProvider;
-    
+
     @ManyToMany
     @JoinTable(
-        name = "project_idea_reaction",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "project_idea_id")
+            name = "project_idea_reaction",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "project_idea_id")
     )
     private Set<ProjectIdea> reactedProjectIdeas = new HashSet<>();
 }
-

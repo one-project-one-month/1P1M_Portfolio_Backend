@@ -8,6 +8,7 @@ import com._p1m.portfolio.data.models.ProjectIdea;
 import com._p1m.portfolio.data.repositories.DevProfileRepository;
 import com._p1m.portfolio.data.repositories.ProjectIdeaRepository;
 import com._p1m.portfolio.features.projectIdea.dto.request.ProjectIdeaRequest;
+import com._p1m.portfolio.features.projectIdea.dto.response.ProjectIdeaResponse;
 import com._p1m.portfolio.features.projectIdea.service.ProjectIdeaCRService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -40,18 +41,27 @@ public class ProjectIdeaCRImpl implements ProjectIdeaCRService {
         ProjectIdea newProject = ProjectIdea.builder()
                 .name(projectIdea.getName())
                 .description(projectIdea.getDescription())
-                .approveStatus(true)
+                .approveStatus(projectIdea.isApproveStatus())
                 .devProfile(devProfileRepository.findById(devId).get())
                 .projectTypes(projectIdea.getProjectTypes())
                 .reactedUsers(projectIdea.getReactedUsers())
                 .build();
-        ProjectIdea response = projectIdeaRepository.save(newProject);
+        projectIdeaRepository.save(newProject);
+
+        ProjectIdeaResponse response = ProjectIdeaResponse.builder()
+                .name(newProject.getName())
+                .description(newProject.getDescription())
+                .approveStatus(newProject.isApproveStatus())
+                .devProfile(newProject.getDevProfile())
+                .projectType(newProject.getProjectTypes())
+                .reactedUsers(newProject.getReactedUsers())
+                .build();
 
         return ApiResponse.builder()
                 .success(1)
                 .code(201)
                 .message("Project Idea created successfully")
-                .data(response) // in case i do have dto response i will use it here
+                .data(response)
                 .build();
     }
 
