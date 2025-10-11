@@ -51,6 +51,7 @@ public class DevProfileServiceImpl implements DevProfileService {
                 .profilePictureUrl(request.getProfilePictureUrl())
                 .github(request.getGithub())
                 .linkedIn(request.getLinkedIn())
+                .aboutDev(request.getAboutDev())
                 .techStacks(resolvedTechStacks)
                 .build();
 
@@ -78,10 +79,10 @@ public class DevProfileServiceImpl implements DevProfileService {
         return DevProfileResponse.builder()
                 .userId(profile.getUser().getId())
                 .name(profile.getName())
-                .email(profile.getUser().getEmail())
                 .profilePictureUrl(profile.getProfilePictureUrl())
                 .github(profile.getGithub())
                 .linkedIn(profile.getLinkedIn())
+                .aboutDev(profile.getAboutDev())
                 .techStacks(techStackNames)
                 .build();
     }

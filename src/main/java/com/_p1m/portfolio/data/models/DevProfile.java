@@ -33,6 +33,9 @@ public class DevProfile extends Auditable {
     private String github;
     
     private String linkedIn;
+
+    @Column(columnDefinition = "TEXT")
+    private String aboutDev;
     
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
