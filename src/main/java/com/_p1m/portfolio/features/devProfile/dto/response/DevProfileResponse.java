@@ -10,7 +10,6 @@ import java.util.List;
 @Setter
 @Builder
 public class DevProfileResponse {
-
     private Long userId;
     private String name;
     private String email;

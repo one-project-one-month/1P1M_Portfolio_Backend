@@ -17,6 +17,7 @@ public class SecurityConstants {
             "/portfolio/api/v1/auth/devProfile/create/{id}",
             "/portfolio/api/v1/auth/devProfile/{id}",
             "/portfolio/api/v1/auth/devProfile/name/{name}",
+            "/portfolio/api/v1/auth/devProfile/techStack/{techStack}",
             "/portfolio/api/v1/auth/devProfile/delete/{id}",
             // Swagger & API Docs
             "/swagger-ui/**",
