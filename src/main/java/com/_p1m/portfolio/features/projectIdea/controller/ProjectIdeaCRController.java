@@ -17,14 +17,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/projectIdeaCR")
+@RequestMapping("/portfolio/api/v1/projectIdea")
 @RestController
 public class ProjectIdeaCRController {
 
     private final ProjectIdeaCRService projectIdeaCRService;
 
 
-    @PostMapping("/create")
+    @PostMapping("/create/{devId}")
     @Operation(
             summary = "Create Project Idea",
             description = "Creates a new project idea in the system.",
@@ -46,19 +46,37 @@ public class ProjectIdeaCRController {
         return ResponseUtils.buildResponse(request, response);
     }
 
+    @Operation(summary = "Get all project ideas",
+            description = "Fetches a list of all project ideas.",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Project ideas fetched successfully"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
+            })
     @GetMapping("")
     public ResponseEntity<PaginatedApiResponse<ProjectIdea>> getAllProjectIdeas(HttpServletRequest request) {
-        PaginatedApiResponse<ProjectIdea> response = projectIdeaCRService.getAllProjectIdeas();
+        PaginatedApiResponse<ProjectIdea> response = projectIdeaCRService.getAllProjectIdeas(request);
         return ResponseUtils.buildPaginatedResponse(request, response);
     }
 
+    @Operation(summary = "Get project idea by name",
+            description = "Fetches a project idea based on the provided name.",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Project idea fetched successfully"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Project idea not found")
+            })
     @GetMapping("/name/{name}")
     public ResponseEntity<ApiResponse> getProjectIdeaByName(@Valid @PathVariable String name, HttpServletRequest request) {
         ApiResponse response = projectIdeaCRService.getProjectIdeaByName(name);
         return ResponseUtils.buildResponse(request, response);
     }
 
-    @GetMapping("/devPFId/{devProfileId}")
+    @Operation(summary = "Get project ideas by developer profile ID",
+            description = "Fetches project ideas associated with a specific developer profile ID.",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Project ideas fetched successfully"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Developer profile not found")
+            })
+    @GetMapping("/devprofile/{devProfileId}")
     public ResponseEntity<ApiResponse> getProjectIdeasByDevProfileId(@Valid @PathVariable Long devProfileId, HttpServletRequest request) {
         ApiResponse response = projectIdeaCRService.getProjectIdeasByDevProfileId(devProfileId);
         return ResponseUtils.buildResponse(request, response);

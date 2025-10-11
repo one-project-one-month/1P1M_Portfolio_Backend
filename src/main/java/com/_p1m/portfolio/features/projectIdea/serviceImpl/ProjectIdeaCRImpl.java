@@ -10,7 +10,9 @@ import com._p1m.portfolio.data.repositories.ProjectIdeaRepository;
 import com._p1m.portfolio.features.projectIdea.dto.request.ProjectIdeaRequest;
 import com._p1m.portfolio.features.projectIdea.dto.response.ProjectIdeaResponse;
 import com._p1m.portfolio.features.projectIdea.service.ProjectIdeaCRService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -66,21 +68,22 @@ public class ProjectIdeaCRImpl implements ProjectIdeaCRService {
     }
 
     @Override
-    public PaginatedApiResponse<ProjectIdea> getAllProjectIdeas() {
+    public PaginatedApiResponse<ProjectIdea> getAllProjectIdeas(HttpServletRequest request) {
         List<ProjectIdea> projectIdeaList = projectIdeaRepository.findAll();
-        PaginationMeta metaData = new PaginationMeta();
-        metaData.setTotalItems(projectIdeaList.size());
-        metaData.setTotalPages(1);     // Since all data is retrieved at once
-        metaData.setCurrentPage(1);    // Since all data is retrieved at once
-        metaData.setMethod("GET");     // Appropriate HTTP method
-        metaData.setEndpoint("/project-ideas");
+
         if(!projectIdeaList.isEmpty()){
             return PaginatedApiResponse.<ProjectIdea>builder()
                     .success(1)
                     .code(200)
                     .message("Project Ideas retrieved successfully")
                     .data(projectIdeaList)
-                    .meta(metaData)
+                    .meta(PaginationMeta.builder()
+                            .totalItems(projectIdeaList.size())
+                            .totalPages(1)
+                            .currentPage(1)
+                            .method(request.getMethod())
+                            .endpoint(request.getRequestURI())
+                            .build())
                     .build();
         }
         return PaginatedApiResponse.<ProjectIdea>builder()
@@ -88,7 +91,13 @@ public class ProjectIdeaCRImpl implements ProjectIdeaCRService {
                 .code(200)
                 .message("No Project Ideas found")
                 .data(List.of())
-                .meta(metaData)
+                .meta(PaginationMeta.builder()
+                        .totalItems(0)
+                        .totalPages(0)
+                        .currentPage(0)
+                        .method(request.getMethod())
+                        .endpoint(request.getRequestURI())
+                        .build())
                 .build();
     }
 
