@@ -5,6 +5,7 @@ import com._p1m.portfolio.config.response.dto.PaginatedApiResponse;
 import com._p1m.portfolio.config.response.utils.ResponseUtils;
 import com._p1m.portfolio.data.models.DevProfile;
 import com._p1m.portfolio.features.devProfile.dto.request.DevProfileRequest;
+import com._p1m.portfolio.features.devProfile.dto.response.DevProfileResponse;
 import com._p1m.portfolio.features.devProfile.service.DevProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -50,8 +51,8 @@ public class DevProfileController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
             })
     @GetMapping("")
-    public PaginatedApiResponse<DevProfileRequest> getAllDevProfiles(HttpServletRequest request) {
-        PaginatedApiResponse<DevProfileRequest> response = devProfileService.findAllDevPf();
+    public PaginatedApiResponse<DevProfileResponse> getAllDevProfiles(HttpServletRequest request) {
+        PaginatedApiResponse<DevProfileResponse> response = devProfileService.findAllDevPf();
         return ResponseUtils.buildPaginatedResponse(request, response).getBody();
     }
     @Operation(summary = "Get developer profile by id",
@@ -79,8 +80,8 @@ public class DevProfileController {
     }
 
     @GetMapping("/techStack/{techStack}")
-    public ResponseEntity<PaginatedApiResponse<DevProfile>> getDevProfilesByTechStack(@PathVariable @Valid String techStack, HttpServletRequest request) {
-        PaginatedApiResponse<DevProfile> response = devProfileService.findByTechStack(techStack);
+    public ResponseEntity<PaginatedApiResponse<DevProfileResponse>> getDevProfilesByTechStack(@PathVariable @Valid String techStack, HttpServletRequest request) {
+        PaginatedApiResponse<DevProfileResponse> response = devProfileService.findByTechStack(techStack);
         return ResponseUtils.buildPaginatedResponse(request,response);
     }
     @Operation(summary = "Delete developer profile by ID",

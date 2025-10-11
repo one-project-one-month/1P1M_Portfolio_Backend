@@ -69,11 +69,11 @@ public class DevProfileServiceImpl implements DevProfileService {
     }
 
     @Override
-    public PaginatedApiResponse<DevProfileRequest> findAllDevPf() {
+    public PaginatedApiResponse<DevProfileResponse> findAllDevPf() {
 
         List<DevProfile> developers = devProfileRepository.findAll();
-        List<DevProfileRequest> developerDtos = new ArrayList<>();
-
+        List<DevProfileResponse> developerDto = new ArrayList<>();
+        int missingDevCount = 0;
         PaginationMeta emptyMeta = PaginationMeta.builder()
                 .method("GET")
                 .endpoint("/portfolio/api/v1/auth/devProfile")
@@ -83,44 +83,45 @@ public class DevProfileServiceImpl implements DevProfileService {
                 .build();
 
         if (!developers.isEmpty()) {
-            developerDtos = developers.stream()
-                    .map(dev -> {
-                        DevProfileRequest requestDto = new DevProfileRequest();
-                        requestDto.setName(dev.getName());
-                        requestDto.setProfilePictureUrl(dev.getProfilePictureUrl());
-                        requestDto.setGithub(dev.getGithub());
-                        requestDto.setLinkedIn(dev.getLinkedIn());
-
-                        List<String> techStackNames = dev.getTechStacks().stream()
-                                .map(TechStack::getName)
-                                .collect(Collectors.toList());
-                        requestDto.setTechStacks(techStackNames);
-                        return requestDto;
-                    })
-                    .collect(Collectors.toList());
+            for (DevProfile developer : developers) {
+                if(developer != null){
+                    DevProfileResponse responseDto = DevProfileResponse.builder()
+                            .userId(developer.getId())
+                            .name(developer.getName())
+                            .profilePictureUrl(developer.getProfilePictureUrl())
+                            .github(developer.getGithub())
+                            .linkedIn(developer.getLinkedIn())
+                            .user(developer.getUser())
+                            .techStacks(developer.getTechStacks().stream()
+                                    .map(TechStack::getName)
+                                    .collect(Collectors.toList()))
+                            .build();
+                    developerDto.add(responseDto);
+                }else{
+                    missingDevCount++;
+                }
+            }
 
 
             PaginationMeta populatedMeta = emptyMeta.toBuilder()
                     .totalItems(developers.size())
                     .build();
 
-            return PaginatedApiResponse.<DevProfileRequest>builder()
+            return PaginatedApiResponse.<DevProfileResponse>builder()
                     .success(1)
                     .code(HttpStatus.OK.value())
-                    .message("Developer profiles fetched successfully. Total: " + developers.size())
-                    .data(developerDtos)
+                    .message("Developer profiles fetched successfully. Total: " + developers.size()+", Missing Profiles: "+missingDevCount)
+                    .data(developerDto)
                     .meta(populatedMeta)
                     .build();
             }
-        return PaginatedApiResponse.<DevProfileRequest>builder()
+        return PaginatedApiResponse.<DevProfileResponse>builder()
                 .success(1)
                 .code(HttpStatus.OK.value())
                 .message("No developer profiles found.")
-                .data(developerDtos)
+                .data(developerDto)
                 .meta(emptyMeta)
                 .build();
-
-
     }
 
     @Override
@@ -179,16 +180,26 @@ public class DevProfileServiceImpl implements DevProfileService {
     }
 
     @Override
-    public PaginatedApiResponse<DevProfile> findByTechStack(String techStack) {
+    public PaginatedApiResponse<DevProfileResponse> findByTechStack(String techStack) {
         Optional<TechStack> stack = techStackRepository.findByNameIgnoreCase(techStack);
         if(stack.isPresent()){
             List<DevProfile> developers = devProfileRepository.findByTechStacks(stack);
+            List<DevProfileResponse> developerDtos = new ArrayList<>();
             if (!developers.isEmpty()) {
-                return PaginatedApiResponse.<DevProfile>builder()
+                for (DevProfile developer : developers) {
+                    DevProfileResponse responseDto = mapToDevProfileResponse(developer);
+                    responseDto.setName(developer.getName());
+                    responseDto.setProfilePictureUrl(developer.getProfilePictureUrl());
+                    responseDto.setGithub(developer.getGithub());
+                    responseDto.setLinkedIn(developer.getLinkedIn());
+                    responseDto.setUserId(developer.getUser().getId());
+                    developerDtos.add(responseDto);
+                }
+                return PaginatedApiResponse.<DevProfileResponse>builder()
                         .success(1)
                         .code(HttpStatus.OK.value())
                         .message("Developer profiles fetched successfully. Total: " + developers.size())
-                        .data(developers)
+                        .data(developerDtos)
                         .meta(PaginationMeta.builder()
                                 .method("GET")
                                 .endpoint("/portfolio/api/v1/auth/devProfile/techStack/" + techStack)
@@ -198,7 +209,7 @@ public class DevProfileServiceImpl implements DevProfileService {
                                 .build())
                         .build();
             } else {
-                return PaginatedApiResponse.<DevProfile>builder()
+                return PaginatedApiResponse.<DevProfileResponse>builder()
                         .success(1)
                         .code(HttpStatus.OK.value())
                         .message("No developer profiles found for tech stack: " + techStack)
@@ -214,7 +225,7 @@ public class DevProfileServiceImpl implements DevProfileService {
             }
 
         }
-        return PaginatedApiResponse.<DevProfile>builder()
+        return PaginatedApiResponse.<DevProfileResponse>builder()
                 .success(0)
                 .code(HttpStatus.NOT_FOUND.value())
                 .message("Tech stack not found: " + techStack)
@@ -242,7 +253,7 @@ public class DevProfileServiceImpl implements DevProfileService {
         return DevProfileResponse.builder()
                 .userId(profile.getUser().getId())
                 .name(profile.getName())
-                .email(profile.getUser().getEmail())
+                .user(profile.getUser())
                 .profilePictureUrl(profile.getProfilePictureUrl())
                 .github(profile.getGithub())
                 .linkedIn(profile.getLinkedIn())
