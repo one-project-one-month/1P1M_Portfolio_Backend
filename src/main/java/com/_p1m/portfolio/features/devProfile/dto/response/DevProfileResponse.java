@@ -13,9 +13,9 @@ public class DevProfileResponse {
 
     private Long userId;
     private String name;
-    private String email;
     private String profilePictureUrl;
     private String github;
     private String linkedIn;
+    private String aboutDev;
     private List<String> techStacks;
 }
