@@ -5,9 +5,11 @@ import com._p1m.portfolio.common.util.ServerUtil;
 import com._p1m.portfolio.config.beans.AdminEmailConfig;
 import com._p1m.portfolio.config.response.dto.ApiResponse;
 import com._p1m.portfolio.data.enums.ROLE;
+import com._p1m.portfolio.data.models.DevProfile;
 import com._p1m.portfolio.data.models.OAuthUser;
 import com._p1m.portfolio.data.models.User;
 import com._p1m.portfolio.data.models.Role;
+import com._p1m.portfolio.data.repositories.DevProfileRepository;
 import com._p1m.portfolio.data.repositories.OAuthUserRepository;
 import com._p1m.portfolio.data.repositories.RoleRepository;
 import com._p1m.portfolio.data.repositories.UserRepository;
@@ -48,6 +50,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final DevProfileRepository devProfileRepository;
     private final PasswordEncoder passwordEncoder;
     private final JWTUtil jwtUtil;
     private final GoogleOAuthService googleOAuthService;
@@ -217,7 +220,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponse loginUser(LoginRequest loginRequest) {
-
+        boolean isNewUser = false;
         Optional<User> existingUser = userRepository.findByEmail(loginRequest.getEmail());
         if(existingUser.isEmpty()){
             return ApiResponse.builder()
@@ -243,6 +246,12 @@ public class UserServiceImpl implements UserService {
 
         String token = jwtUtil.generateToken(loginRequest.getEmail());
 
+        // To check If the user Login For the Very First time with Dev Profile.
+        Optional<DevProfile> isDevProfileExist = devProfileRepository.findByUserId(user.getId());
+        if(isDevProfileExist.isEmpty() && user.getRole().getId() == 1){ // Only for User ( Not including Admins )
+            isNewUser = true;
+        }
+
         // Check if the Email is Admin or Not
         long roleId = user.getRole().getId();
         String roleName =user.getRole().getName();
@@ -261,7 +270,8 @@ public class UserServiceImpl implements UserService {
                         "email", user.getEmail(),
                         "roleId", roleId,
                         "role",roleName,
-                        "token", token
+                        "token", token,
+                        "isNewUserLogin", isNewUser
                 ))
                 .meta(Map.of("timestamp", System.currentTimeMillis()))
                 .build();
