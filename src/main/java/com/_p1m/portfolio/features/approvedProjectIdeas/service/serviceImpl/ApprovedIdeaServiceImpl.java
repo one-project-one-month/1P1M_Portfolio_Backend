@@ -1,12 +1,12 @@
 package com._p1m.portfolio.features.approvedProjectIdeas.service.serviceImpl;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com._p1m.portfolio.config.response.dto.PaginationMeta;
+import com._p1m.portfolio.data.enums.ProjectIdeaStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com._p1m.portfolio.config.exceptions.EntityNotFoundException;
 import com._p1m.portfolio.config.response.dto.ApiResponse;
 import com._p1m.portfolio.config.response.dto.PaginatedApiResponse;
-import com._p1m.portfolio.config.response.dto.PaginationMeta;
 import com._p1m.portfolio.data.models.ProjectIdea;
 import com._p1m.portfolio.data.models.User;
 import com._p1m.portfolio.data.repositories.ProjectIdeaRepository;
@@ -34,17 +33,8 @@ public class ApprovedIdeaServiceImpl implements ApprovedIdeaService {
     private final JWTUtil jwtUtil;
 
     @Override
-    public PaginatedApiResponse<ApprovedIdeaResponse> listApprovedIdeas(String keyword, Pageable pageable) {
-        Specification<ProjectIdea> spec = (root, query, criteriaBuilder) -> {
-            var approvedPredicate = criteriaBuilder.isTrue(root.get("approveStatus"));
-            if (keyword != null && !keyword.trim().isEmpty()) {
-                var keywordPredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + keyword.toLowerCase() + "%");
-                return criteriaBuilder.and(approvedPredicate, keywordPredicate);
-            }
-            return approvedPredicate;
-        };
-
-        Page<ProjectIdea> ideaPage = projectIdeaRepository.findAll(spec, pageable);
+    public PaginatedApiResponse<ApprovedIdeaResponse> listApprovedIdeas(Pageable pageable) {
+        Page<ProjectIdea> ideaPage = projectIdeaRepository.findByApproveStatus(true, pageable);
         List<ApprovedIdeaResponse> responses = ideaPage.getContent().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -70,8 +60,12 @@ public class ApprovedIdeaServiceImpl implements ApprovedIdeaService {
         ProjectIdea approvedIdea = projectIdeaRepository.findByIdAndApproveStatus(ideaId, true)
                 .orElseThrow(() -> new EntityNotFoundException("Approved Project Idea not found with id: " + ideaId));
 
-        Optional.ofNullable(request.name()).ifPresent(approvedIdea::setName);
-        Optional.ofNullable(request.description()).ifPresent(approvedIdea::setDescription);
+        if (request.name() != null && !request.name().isBlank()) {
+            approvedIdea.setName(request.name());
+        }
+        if (request.description() != null) {
+            approvedIdea.setDescription(request.description());
+        }
 
         projectIdeaRepository.save(approvedIdea);
 
@@ -84,10 +78,11 @@ public class ApprovedIdeaServiceImpl implements ApprovedIdeaService {
     @Transactional
     public ApiResponse deleteApprovedIdea(Long ideaId, String token) {
         checkAdminRole(token);
-        if (!projectIdeaRepository.existsByIdAndApproveStatus(ideaId, true)) {
-            throw new EntityNotFoundException("Approved Project Idea not found with id: " + ideaId);
-        }
-        projectIdeaRepository.deleteById(ideaId);
+        ProjectIdea approvedIdea = projectIdeaRepository.findByIdAndApproveStatus(ideaId, true)
+                .orElseThrow(() -> new EntityNotFoundException("Approved Project Idea not found with id: " + ideaId));
+
+        approvedIdea.setStatus(ProjectIdeaStatus.DELETED);
+        projectIdeaRepository.save(approvedIdea);
 
         return ApiResponse.builder()
                 .success(1).code(HttpStatus.OK.value()).message("Approved Project Idea deleted successfully.")
