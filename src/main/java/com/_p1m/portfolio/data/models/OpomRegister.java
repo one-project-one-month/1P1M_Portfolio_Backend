@@ -10,11 +10,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
+
 
 @Entity
 @Getter
@@ -31,7 +29,8 @@ public class OpomRegister extends Auditable {
     
 	@Column(nullable = false)
     private String phone;
-    
+
+    @Column(name = "github_url")
     private String github_url;
     
     private String telegram_username;
@@ -46,4 +45,7 @@ public class OpomRegister extends Auditable {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;
-}
+
+    @Column(nullable = false)
+    private boolean isDeleted = false;
+    }
