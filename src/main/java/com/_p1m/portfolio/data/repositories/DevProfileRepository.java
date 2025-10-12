@@ -11,4 +11,6 @@ import com._p1m.portfolio.data.models.DevProfile;
 public interface DevProfileRepository extends JpaRepository<DevProfile, Long> {
 	Optional<DevProfile> findByUserEmail(String email);
     boolean existsByUser(User user);
+
+    Optional<DevProfile> findByUserId(Long id);
 }
