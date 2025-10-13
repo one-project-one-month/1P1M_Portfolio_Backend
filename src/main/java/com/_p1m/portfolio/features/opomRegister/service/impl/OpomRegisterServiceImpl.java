@@ -46,9 +46,6 @@ public class OpomRegisterServiceImpl implements OpomRegisterService {
         DevProfile devProfile = devProfileRepository.findByUserEmail(email)
                 .orElseThrow(() -> new com._p1m.portfolio.config.exceptions.EntityNotFoundException("DevProfile not found for email: " + email));
 
-        if (userRegisterRequest.getDevProfileId() != null) {
-            devProfile = entityManager.find(DevProfile.class, userRegisterRequest.getDevProfileId());
-        }
 
         OpomRegister register = OpomRegister.builder()
                 .name(userRegisterRequest.getName())
@@ -101,9 +98,14 @@ public class OpomRegisterServiceImpl implements OpomRegisterService {
 
     @Override
     @Transactional
-    public ApiResponse updateOpomRegisterData(Long id, UserRegisterRequest userRegisterRequest) {
+    public ApiResponse updateOpomRegisterData(Long id, UserRegisterRequest userRegisterRequest,String token) {
         OpomRegister register = opomRegisterRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Register not found"));
+        String email = jwtUtil.extractEmail(token);
+
+        DevProfile devProfile = devProfileRepository.findByUserEmail(email)
+                .orElseThrow(() -> new com._p1m.portfolio.config.exceptions.EntityNotFoundException("DevProfile not found for email: " + email));
+
 
         register.setName(userRegisterRequest.getName());
         register.setEmail(userRegisterRequest.getEmail());
@@ -113,10 +115,6 @@ public class OpomRegisterServiceImpl implements OpomRegisterService {
         register.setRole(userRegisterRequest.getRole());
         register.setStatus(userRegisterRequest.getStatus());
 
-        if (userRegisterRequest.getDevProfileId() != null) {
-            DevProfile devProfile = entityManager.find(DevProfile.class, userRegisterRequest.getDevProfileId());
-            register.setDevProfile(devProfile);
-        }
 
         Platform platform = entityManager.find(Platform.class, userRegisterRequest.getPlatformId());
         if (platform == null) throw new EntityNotFoundException("Platform not found");

@@ -32,6 +32,5 @@ public class UserRegisterRequest {
     private Long platformId;
 
     private String platformUrl;
-
-    private Long devProfileId; // optional (if linked to a DevProfile)
+    // optional (if linked to a DevProfile)
 }
