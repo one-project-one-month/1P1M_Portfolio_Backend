@@ -27,13 +27,10 @@ public class UserRegisterRequest {
     @NotBlank(message = "Role is required")
     private String role;
 
-    @NotNull(message = "Status is required")
     private Status status;
 
-    @NotNull(message = "Platform ID is required")
     private Long platformId;
 
-    @NotBlank(message = "Platform link is required")
     private String platformUrl;
 
     private Long devProfileId; // optional (if linked to a DevProfile)
