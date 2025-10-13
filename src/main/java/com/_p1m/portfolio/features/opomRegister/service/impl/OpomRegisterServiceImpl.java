@@ -1,50 +1,63 @@
 package com._p1m.portfolio.features.opomRegister.service.impl;
 
 import com._p1m.portfolio.common.constant.Status;
+import com._p1m.portfolio.config.response.dto.ApiResponse;
+import com._p1m.portfolio.config.response.dto.PaginatedApiResponse;
+import com._p1m.portfolio.config.response.dto.PaginationMeta;
 import com._p1m.portfolio.data.models.DevProfile;
 import com._p1m.portfolio.data.models.OpomRegister;
 import com._p1m.portfolio.data.models.OpomRegisterPlatformLink;
 import com._p1m.portfolio.data.models.lookup.Platform;
+import com._p1m.portfolio.data.repositories.DevProfileRepository;
+import com._p1m.portfolio.data.storage.CloudStorageService;
 import com._p1m.portfolio.features.opomRegister.dto.request.UserRegisterRequest;
 import com._p1m.portfolio.features.opomRegister.dto.response.UserRegisterResponse;
 import com._p1m.portfolio.data.repositories.OpomRegisterRepository;
 import com._p1m.portfolio.features.opomRegister.service.OpomRegisterService;
+import com._p1m.portfolio.security.JWT.JWTUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
 public class OpomRegisterServiceImpl implements OpomRegisterService {
 
     private final OpomRegisterRepository opomRegisterRepository;
+    private final DevProfileRepository devProfileRepository;
     private final EntityManager entityManager;
+    private final CloudStorageService cloudStorageService;
+    private final JWTUtil jwtUtil;
 
     @Override
     @Transactional
-    public UserRegisterResponse registerUser(UserRegisterRequest request) {
-        Platform platform = entityManager.find(Platform.class, request.getPlatformId());
+    public ApiResponse registerUser(UserRegisterRequest userRegisterRequest,String token) {
+        String email = jwtUtil.extractEmail(token);
+        Platform platform = entityManager.find(Platform.class, userRegisterRequest.getPlatformId());
         if (platform == null) throw new EntityNotFoundException("Platform not found");
 
-        DevProfile devProfile = null;
-        if (request.getDevProfileId() != null) {
-            devProfile = entityManager.find(DevProfile.class, request.getDevProfileId());
+        DevProfile devProfile = devProfileRepository.findByUserEmail(email)
+                .orElseThrow(() -> new com._p1m.portfolio.config.exceptions.EntityNotFoundException("DevProfile not found for email: " + email));
+
+        if (userRegisterRequest.getDevProfileId() != null) {
+            devProfile = entityManager.find(DevProfile.class, userRegisterRequest.getDevProfileId());
         }
 
         OpomRegister register = OpomRegister.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .phone(request.getPhone())
-                .github_url(request.getGithub_url())
-                .telegram_username(request.getTelegram_username())
-                .role(request.getRole())
-                .status(request.getStatus())
+                .name(userRegisterRequest.getName())
+                .email(userRegisterRequest.getEmail())
+                .phone(userRegisterRequest.getPhone())
+                .github_url(userRegisterRequest.getGithub_url())
+                .telegram_username(userRegisterRequest.getTelegram_username())
+                .role(userRegisterRequest.getRole())
+                .status(userRegisterRequest.getStatus())
                 .devProfile(devProfile)
                 .build();
 
@@ -54,15 +67,21 @@ public class OpomRegisterServiceImpl implements OpomRegisterService {
         OpomRegisterPlatformLink link = OpomRegisterPlatformLink.builder()
                 .opomRegister(register)
                 .platform(platform)
-                .link(request.getPlatformUrl())
+                .link(userRegisterRequest.getPlatformUrl())
                 .build();
         entityManager.persist(link);
 
-        return toResponse(register);
+        return ApiResponse.builder()
+                .success(1)
+                .code(HttpStatus.CREATED.value())
+                .data(true)
+                .message("Opom registered successfully.")
+                .build();
     }
 
+
     @Override
-    public Page<UserRegisterResponse> getAllOpomRegisters(int page, int size, String dateOrder, String role) {
+    public PaginatedApiResponse<UserRegisterResponse> getAllOpomRegisters(int page, int size, String dateOrder, String role) {
         Sort.Direction sortDir = "oldest".equalsIgnoreCase(dateOrder) ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, "createdAt"));
 
@@ -70,29 +89,36 @@ public class OpomRegisterServiceImpl implements OpomRegisterService {
                 ? opomRegisterRepository.findByRoleIgnoreCase(role, pageable)
                 : opomRegisterRepository.findAll(pageable);
 
-        return pageResult.map(this::toResponse);
+        PaginationMeta meta = new PaginationMeta();
+
+         return PaginatedApiResponse.<UserRegisterResponse>builder()
+                .success(1)
+                .code(HttpStatus.OK.value())
+                .message("Fetched successfully")
+                .meta(meta)
+                .build();
     }
 
     @Override
     @Transactional
-    public UserRegisterResponse updateOpomRegisterData(Long id, UserRegisterRequest request) {
+    public ApiResponse updateOpomRegisterData(Long id, UserRegisterRequest userRegisterRequest) {
         OpomRegister register = opomRegisterRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Register not found"));
 
-        register.setName(request.getName());
-        register.setEmail(request.getEmail());
-        register.setPhone(request.getPhone());
-        register.setGithub_url(request.getGithub_url());
-        register.setTelegram_username(request.getTelegram_username());
-        register.setRole(request.getRole());
-        register.setStatus(request.getStatus());
+        register.setName(userRegisterRequest.getName());
+        register.setEmail(userRegisterRequest.getEmail());
+        register.setPhone(userRegisterRequest.getPhone());
+        register.setGithub_url(userRegisterRequest.getGithub_url());
+        register.setTelegram_username(userRegisterRequest.getTelegram_username());
+        register.setRole(userRegisterRequest.getRole());
+        register.setStatus(userRegisterRequest.getStatus());
 
-        if (request.getDevProfileId() != null) {
-            DevProfile devProfile = entityManager.find(DevProfile.class, request.getDevProfileId());
+        if (userRegisterRequest.getDevProfileId() != null) {
+            DevProfile devProfile = entityManager.find(DevProfile.class, userRegisterRequest.getDevProfileId());
             register.setDevProfile(devProfile);
         }
 
-        Platform platform = entityManager.find(Platform.class, request.getPlatformId());
+        Platform platform = entityManager.find(Platform.class, userRegisterRequest.getPlatformId());
         if (platform == null) throw new EntityNotFoundException("Platform not found");
 
         // Remove existing links
@@ -107,51 +133,31 @@ public class OpomRegisterServiceImpl implements OpomRegisterService {
         OpomRegisterPlatformLink newLink = OpomRegisterPlatformLink.builder()
                 .opomRegister(register)
                 .platform(platform)
-                .link(request.getPlatformUrl())
+                .link(userRegisterRequest.getPlatformUrl())
                 .build();
         entityManager.persist(newLink);
 
-        return toResponse(register);
+        return ApiResponse.builder()
+                .success(1)
+                .code(HttpStatus.OK.value())
+                .data(true)
+                .message("Opom register updated successfully.")
+                .build();
     }
 
     @Override
     @Transactional
-    public void softDeleteOpomRegister(Long id) {
+    public ApiResponse softDeleteOpomRegister(Long id) {
         OpomRegister register = opomRegisterRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Register not found"));
         register.setStatus(Status.INACTIVE);
         register.setDeleted(true);
         opomRegisterRepository.save(register);
-    }
-
-    private UserRegisterResponse toResponse(OpomRegister entity) {
-        UserRegisterResponse response = new UserRegisterResponse();
-        response.setId(entity.getId());
-        response.setName(entity.getName());
-        response.setEmail(entity.getEmail());
-        response.setPhone(entity.getPhone());
-        response.setGithub_url(entity.getGithub_url());
-        response.setTelegram_username(entity.getTelegram_username());
-        response.setRole(entity.getRole());
-        response.setStatus(entity.getStatus());
-        response.setCreatedAt(entity.getCreatedAt());
-        response.setUpdatedAt(entity.getUpdatedAt());
-
-        List<UserRegisterResponse.PlatformInfo> platforms = entityManager.createQuery(
-                        "SELECT l FROM OpomRegisterPlatformLink l WHERE l.opomRegister.id = :id",
-                        OpomRegisterPlatformLink.class)
-                .setParameter("id", entity.getId())
-                .getResultList()
-                .stream()
-                .map(l -> {
-                    UserRegisterResponse.PlatformInfo pi = new UserRegisterResponse.PlatformInfo();
-                    pi.setPlatformId(l.getPlatform().getId());
-                    pi.setPlatformName(l.getPlatform().getName());
-                    pi.setLink(l.getLink());
-                    return pi;
-                }).collect(Collectors.toList());
-
-        response.setPlatforms(platforms);
-        return response;
+        return ApiResponse.builder()
+                .success(1)
+                .code(HttpStatus.OK.value())
+                .data(true)
+                .message("Opom register deleted successfully.")
+                .build();
     }
 }
