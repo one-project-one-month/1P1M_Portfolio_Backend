@@ -90,7 +90,9 @@ public class OpomController {
             @Valid @RequestBody UserRegisterRequest userRegisterRequest,
             HttpServletRequest request
     ) {
-        ApiResponse response=this.opomRegisterService.updateOpomRegisterData(id,userRegisterRequest);
+        String token = jwtUtil.extractTokenFromRequest(request);
+
+        ApiResponse response=this.opomRegisterService.updateOpomRegisterData(id,userRegisterRequest,token);
         return ResponseUtils.buildResponse(request,response);
     }
 

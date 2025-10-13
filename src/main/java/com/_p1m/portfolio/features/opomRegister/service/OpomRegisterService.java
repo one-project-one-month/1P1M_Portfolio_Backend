@@ -10,7 +10,7 @@ public interface OpomRegisterService {
 
     PaginatedApiResponse getAllOpomRegisters(int page, int size, String dateOrder, String role);
 
-    ApiResponse updateOpomRegisterData(Long id, UserRegisterRequest request);
+    ApiResponse updateOpomRegisterData(Long id, UserRegisterRequest request,String token);
 
     ApiResponse softDeleteOpomRegister(Long id);
 }
