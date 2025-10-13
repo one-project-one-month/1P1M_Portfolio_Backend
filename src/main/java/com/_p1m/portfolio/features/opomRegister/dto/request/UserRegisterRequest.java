@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class UserRegisterRequest {
 
@@ -29,8 +31,5 @@ public class UserRegisterRequest {
 
     private Status status;
 
-    private Long platformId;
-
-    private String platformUrl;
-    // optional (if linked to a DevProfile)
+    private List<PlatformLinkDto> platformLinks;
 }

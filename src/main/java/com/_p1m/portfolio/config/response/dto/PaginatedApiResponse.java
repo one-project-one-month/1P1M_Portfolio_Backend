@@ -9,7 +9,7 @@ import lombok.extern.jackson.Jacksonized;
 
 @Data
 @Jacksonized
-@SuperBuilder
+@Builder
 public class PaginatedApiResponse<T> {
 	private int success;
     private int code;

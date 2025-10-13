@@ -4,19 +4,28 @@ import com._p1m.portfolio.config.response.dto.ApiResponse;
 import com._p1m.portfolio.config.response.dto.PaginatedApiResponse;
 import com._p1m.portfolio.config.response.utils.ResponseUtils;
 import com._p1m.portfolio.features.opomRegister.dto.request.UserRegisterRequest;
+import com._p1m.portfolio.features.opomRegister.dto.response.OpomRegisterResponse;
 import com._p1m.portfolio.features.opomRegister.service.OpomRegisterService;
+import com._p1m.portfolio.features.projectPortfolio.dto.response.ProjectPortfolioResponse;
 import com._p1m.portfolio.security.JWT.JWTUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/${api.base.path}")
+@RequestMapping("/${api.base.path}/auth")
 @RequiredArgsConstructor
 public class OpomController {
 
@@ -46,29 +55,42 @@ public class OpomController {
     }
 
     @Operation(
-            summary = "get all opom registers",
-            description = "get all opom registers",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Get all Opom registers Request",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = UserRegisterRequest.class))
-            ),
+            summary = "Fetching all Opom Register.",
+            description = "Fetching all Opom Register.",
             responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Request Success"),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Project profiles are fetched successfully"),
             }
     )
+    @Validated
+    @GetMapping("/getAllOpomRegister")
+    public ResponseEntity<PaginatedApiResponse<OpomRegisterResponse>> retrieveAllProjectPortfolio(
+            @Parameter(description = "Search keyword")
+            @RequestParam(value = "keyword", required = false) String keyword,
 
-    @GetMapping("/admin/list")
-    public ResponseEntity<PaginatedApiResponse> getAllOpomRegisters(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "newest") String dateOrder,
-            @RequestParam(required = false) String role,
+            @Parameter(description = "Page number (starts from 0)")
+            @RequestParam(value = "page", defaultValue = "0")
+            @Min(value = 0, message = "Page number must be 0 or greater") int page,
+
+            @Parameter(description = "Page size")
+            @RequestParam(value = "size", defaultValue = "20")
+            @Min(value = 1, message = "Page size must be 0 or greater")
+            @Max(value = 100, message = "Page size can't be greater than 100") int size,
+
+            @Parameter(description = "Field to sort by (name)")
+            @RequestParam(value = "sortField", defaultValue = "name")String sortField,
+
+            @Parameter(description = "Sort direction (asc or desc)")
+            @RequestParam(value = "sortDirection", defaultValue = "desc") String sortDirection,
+
             HttpServletRequest request
     ) {
-        PaginatedApiResponse response= this.opomRegisterService.getAllOpomRegisters(page, size, dateOrder, role);
-        return ResponseUtils.buildPaginatedResponse(request,response);
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+
+        PaginatedApiResponse<OpomRegisterResponse> response =
+                this.opomRegisterService.getAllpaginatedOpomRegisterList(keyword, pageable);
+
+        return ResponseUtils.buildPaginatedResponse(request, response);
     }
 
     @Operation(

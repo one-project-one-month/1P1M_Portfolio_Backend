@@ -5,6 +5,9 @@ import org.springframework.stereotype.Repository;
 
 import com._p1m.portfolio.data.models.lookup.Platform;
 
+import java.util.Optional;
+
 @Repository
 public interface PlatformRepository extends JpaRepository<Platform, Long> {
+    Optional<Object> findByName(String platformName);
 }

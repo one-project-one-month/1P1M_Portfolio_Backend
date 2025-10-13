@@ -1,6 +1,7 @@
 package com._p1m.portfolio.data.repositories;
 
 import com._p1m.portfolio.data.models.OpomRegister;
+import com._p1m.portfolio.data.models.ProjectPortfolio;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,7 +22,7 @@ public interface OpomRegisterRepository extends JpaRepository<OpomRegister, Long
     // For update / soft delete
     Optional<OpomRegister> findByIdAndIsDeletedFalse(Long id);
 
-    Page<OpomRegister> findAll(Specification<OpomRegister> spec, Pageable pageable);
+    Page<OpomRegister> findAll(Specification<ProjectPortfolio> spec, Pageable pageable);
 }
 
 

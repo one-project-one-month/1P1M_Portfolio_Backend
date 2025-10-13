@@ -29,9 +29,6 @@ public class OpomRegister extends Auditable {
     
 	@Column(nullable = false)
     private String phone;
-
-    @Column(name = "github_url")
-    private String github_url;
     
     private String telegram_username;
     

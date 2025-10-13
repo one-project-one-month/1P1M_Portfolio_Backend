@@ -16,8 +16,8 @@ public class UserRegisterResponse {
     private String telegram_username;
     private String role;
     private Status status;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+//    private LocalDateTime createdAt;
+//    private LocalDateTime updatedAt;
     private List<PlatformInfo> platforms;
 
     @Data
