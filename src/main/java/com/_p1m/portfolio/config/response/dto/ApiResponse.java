@@ -2,11 +2,12 @@ package com._p1m.portfolio.config.response.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
 import java.util.Map;
 
 @Data
-@Builder
+@SuperBuilder
 public class ApiResponse {
     private int success;
     private int code;

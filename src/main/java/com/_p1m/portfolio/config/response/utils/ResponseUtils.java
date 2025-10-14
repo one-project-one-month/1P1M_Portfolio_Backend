@@ -12,18 +12,19 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public class ResponseUtils {
 
-    public static ResponseEntity<ApiResponse> buildResponse(final HttpServletRequest request, final ApiResponse response) {
-        final HttpStatus status = HttpStatus.valueOf(response.getCode());
+    public static ResponseEntity<ApiResponse> buildResponse(final HttpServletRequest request, final Object response) {
+        ApiResponse apiResponse = (ApiResponse) response;
+        final HttpStatus status = HttpStatus.valueOf(apiResponse.getCode());
 
-        if (response.getMeta() == null) {
+        if (apiResponse.getMeta() == null) {
             final String method = request.getMethod();
             final String endpoint = request.getRequestURI();
-            response.setMeta(new HashMap<>());
-            response.getMeta().put("method", method);
-            response.getMeta().put("endpoint", endpoint);
+            apiResponse.setMeta(new HashMap<>());
+            apiResponse.getMeta().put("method", method);
+            apiResponse.getMeta().put("endpoint", endpoint);
         }
 
-        return new ResponseEntity<>(response, status);
+        return new ResponseEntity<ApiResponse>( apiResponse, status);
     }
     
     public static <T> ResponseEntity<PaginatedApiResponse<T>> buildPaginatedResponse(

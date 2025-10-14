@@ -47,8 +47,6 @@ public class ApprovedIdeaController {
     )
     @GetMapping
     public ResponseEntity<PaginatedApiResponse<ApprovedIdeaResponse>> listApprovedIdeas(
-            @Parameter(description = "Search keyword for project name")
-            @RequestParam(value = "keyword", required = false) String keyword,
 
             @Parameter(description = "Page number (starts from 0)")
             @RequestParam(value = "page", defaultValue = "0") @Min(0) int page,
@@ -59,7 +57,7 @@ public class ApprovedIdeaController {
             HttpServletRequest request) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        PaginatedApiResponse<ApprovedIdeaResponse> response = approvedIdeaService.listApprovedIdeas(keyword, pageable);
+        PaginatedApiResponse<ApprovedIdeaResponse> response = approvedIdeaService.listApprovedIdeas(pageable);
         return ResponseUtils.buildPaginatedResponse(request, response);
     }
 
