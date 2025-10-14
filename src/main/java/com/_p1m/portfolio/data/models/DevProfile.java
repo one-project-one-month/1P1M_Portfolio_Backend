@@ -36,6 +36,9 @@ public class DevProfile extends Auditable {
 
     @Column(columnDefinition = "TEXT")
     private String aboutDev;
+
+    @Column(columnDefinition = "TEXT" , nullable = false)
+    private String role;
     
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
