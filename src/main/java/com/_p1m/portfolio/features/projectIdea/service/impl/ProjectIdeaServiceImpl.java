@@ -2,26 +2,28 @@ package com._p1m.portfolio.features.projectIdea.service.impl;
 
 import com._p1m.portfolio.config.exceptions.EntityNotFoundException;
 import com._p1m.portfolio.config.response.dto.ApiResponse;
+import com._p1m.portfolio.config.response.dto.PaginatedApiResponse;
+import com._p1m.portfolio.config.response.dto.PaginationMeta;
 import com._p1m.portfolio.data.enums.ProjectIdeaStatus;
-import com._p1m.portfolio.data.models.DevProfile;
-import com._p1m.portfolio.data.models.ProjectIdea;
-import com._p1m.portfolio.data.models.User;
+import com._p1m.portfolio.data.models.*;
 import com._p1m.portfolio.data.models.lookup.ProjectType;
 import com._p1m.portfolio.data.repositories.DevProfileRepository;
 import com._p1m.portfolio.data.repositories.ProjectIdeaRepository;
 import com._p1m.portfolio.data.repositories.ProjectTypeRepository;
 import com._p1m.portfolio.data.repositories.UserRepository;
+import com._p1m.portfolio.features.opomRegister.dto.response.OpomRegisterResponse;
 import com._p1m.portfolio.features.projectIdea.dto.request.ProjectIdeaRequest;
+import com._p1m.portfolio.features.projectIdea.dto.response.ProjectIdeaListResponse;
 import com._p1m.portfolio.features.projectIdea.service.ProjectIdeaService;
 import com._p1m.portfolio.security.JWT.JWTUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -110,6 +112,50 @@ public class ProjectIdeaServiceImpl implements ProjectIdeaService {
                         "Project Idea Approve Status : ", projectIdea.getStatus()
                 ))
                 .meta(Map.of("timestamp", System.currentTimeMillis()))
+                .build();
+    }
+
+    @Override
+    public PaginatedApiResponse<ProjectIdeaListResponse> getAllPaginatedProjectIdeaList(String keyword, Pageable pageable) {
+        Specification<ProjectIdea> spec = (root, query, criteriaBuilder) -> {
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                return criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("name")),
+                        "%" + keyword.toLowerCase() + "%"
+                );
+            }
+            return null;
+        };
+
+        Page<ProjectIdea> projectIdeas = this.projectIdeaRepository.findAll(spec, pageable);
+        List<ProjectIdeaListResponse> projectIdeaListResponses = projectIdeas.getContent().stream()
+                .map(projectIdea -> ProjectIdeaListResponse.builder()
+                        .id(projectIdea.getId())
+                        .projectName(projectIdea.getName())
+                        .description(projectIdea.getDescription())
+                        .dev_id(projectIdea.getDevProfile().getId())
+                        .devName(projectIdea.getDevProfile().getName())
+                        .profilePictureUrl(projectIdea.getDevProfile().getProfilePictureUrl())
+                        .reaction_count(projectIdea.getReactedUsers() != null
+                                ? projectIdea.getReactedUsers().size()
+                                : 0)
+                        .projectTypes(projectIdea.getProjectTypes().stream()
+                                .map(ProjectType::getName)
+                                .toList())
+                        .build()
+                ).toList();
+
+        PaginationMeta meta = new PaginationMeta();
+        meta.setTotalItems(projectIdeas.getTotalElements());
+        meta.setTotalPages(projectIdeas.getTotalPages());
+        meta.setCurrentPage(pageable.getPageNumber() + 1);
+
+        return PaginatedApiResponse.<ProjectIdeaListResponse>builder()
+                .success(1)
+                .code(HttpStatus.OK.value())
+                .message("Fetched successfully")
+                .meta(meta)
+                .data(projectIdeaListResponses)
                 .build();
     }
 }

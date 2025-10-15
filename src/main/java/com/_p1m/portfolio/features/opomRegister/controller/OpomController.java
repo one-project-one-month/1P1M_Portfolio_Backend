@@ -63,7 +63,7 @@ public class OpomController {
     )
     @Validated
     @GetMapping("/getAllOpomRegister")
-    public ResponseEntity<PaginatedApiResponse<OpomRegisterResponse>> retrieveAllProjectPortfolio(
+    public ResponseEntity<PaginatedApiResponse<OpomRegisterResponse>> getAllOpomRegisterList(
             @Parameter(description = "Search keyword")
             @RequestParam(value = "keyword", required = false) String keyword,
 
