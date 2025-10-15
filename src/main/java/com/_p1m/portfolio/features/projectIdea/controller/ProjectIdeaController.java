@@ -1,9 +1,12 @@
 package com._p1m.portfolio.features.projectIdea.controller;
 
 import com._p1m.portfolio.config.response.dto.ApiResponse;
+import com._p1m.portfolio.config.response.dto.PaginatedApiResponse;
 import com._p1m.portfolio.config.response.utils.ResponseUtils;
 import com._p1m.portfolio.features.opomRegister.dto.request.UserRegisterRequest;
+import com._p1m.portfolio.features.opomRegister.dto.response.OpomRegisterResponse;
 import com._p1m.portfolio.features.projectIdea.dto.request.ProjectIdeaRequest;
+import com._p1m.portfolio.features.projectIdea.dto.response.ProjectIdeaListResponse;
 import com._p1m.portfolio.features.projectIdea.service.ProjectIdeaService;
 import com._p1m.portfolio.features.projectPortfolio.dto.request.UpdateProjectPortfolioRequest;
 import com._p1m.portfolio.security.JWT.JWTUtil;
@@ -14,8 +17,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -94,6 +103,45 @@ public class ProjectIdeaController {
         String token = jwtUtil.extractTokenFromRequest(request);
         final ApiResponse response = this.projectIdeaService.approveProjectIdeaStatus(projectIdeaId , status , token);
         return ResponseUtils.buildResponse(request , response);
+    }
+
+    @Operation(
+            summary = "Fetching all Project Ideas.",
+            description = "Fetching all Project Ideas.",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Project profiles are fetched successfully"),
+            }
+    )
+    @Validated
+    @GetMapping("/getAllProjectIdeas")
+    public ResponseEntity<PaginatedApiResponse<ProjectIdeaListResponse>> getAllProjectIdeaList(
+            @Parameter(description = "Search keyword")
+            @RequestParam(value = "keyword", required = false) String keyword,
+
+            @Parameter(description = "Page number (starts from 0)")
+            @RequestParam(value = "page", defaultValue = "0")
+            @Min(value = 0, message = "Page number must be 0 or greater") int page,
+
+            @Parameter(description = "Page size")
+            @RequestParam(value = "size", defaultValue = "20")
+            @Min(value = 1, message = "Page size must be 0 or greater")
+            @Max(value = 100, message = "Page size can't be greater than 100") int size,
+
+            @Parameter(description = "Field to sort by (name)")
+            @RequestParam(value = "sortField", defaultValue = "name")String sortField,
+
+            @Parameter(description = "Sort direction (asc or desc)")
+            @RequestParam(value = "sortDirection", defaultValue = "desc") String sortDirection,
+
+            HttpServletRequest request
+    ) {
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+
+        PaginatedApiResponse<ProjectIdeaListResponse> response =
+                this.projectIdeaService.getAllPaginatedProjectIdeaList(keyword, pageable);
+
+        return ResponseUtils.buildPaginatedResponse(request, response);
     }
 
 }
