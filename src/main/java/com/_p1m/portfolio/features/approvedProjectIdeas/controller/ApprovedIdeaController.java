@@ -47,6 +47,8 @@ public class ApprovedIdeaController {
     )
     @GetMapping
     public ResponseEntity<PaginatedApiResponse<ApprovedIdeaResponse>> listApprovedIdeas(
+            @Parameter(description = "Optional sort method. Use 'popular' to sort by reaction count.")
+            @RequestParam(value = "sortBy", required = false) String sortBy,
 
             @Parameter(description = "Page number (starts from 0)")
             @RequestParam(value = "page", defaultValue = "0") @Min(0) int page,
@@ -57,7 +59,7 @@ public class ApprovedIdeaController {
             HttpServletRequest request) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        PaginatedApiResponse<ApprovedIdeaResponse> response = approvedIdeaService.listApprovedIdeas(pageable);
+        PaginatedApiResponse<ApprovedIdeaResponse> response = approvedIdeaService.listApprovedIdeas(sortBy, pageable);
         return ResponseUtils.buildPaginatedResponse(request, response);
     }
 

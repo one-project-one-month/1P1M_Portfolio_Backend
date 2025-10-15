@@ -6,6 +6,8 @@ public record ApprovedIdeaResponse(
         Long id,
         String name,
         String description,
-        String authorName,
+        String devName,
+        int reactionCount,
+        String status,
         List<String> projectTypes
 ) {}

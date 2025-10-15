@@ -33,8 +33,16 @@ public class ApprovedIdeaServiceImpl implements ApprovedIdeaService {
     private final JWTUtil jwtUtil;
 
     @Override
-    public PaginatedApiResponse<ApprovedIdeaResponse> listApprovedIdeas(Pageable pageable) {
-        Page<ProjectIdea> ideaPage = projectIdeaRepository.findByApproveStatus(true, pageable);
+    public PaginatedApiResponse<ApprovedIdeaResponse> listApprovedIdeas(String sortBy, Pageable pageable) {
+
+        Page<ProjectIdea> ideaPage;
+
+        if ("popular".equalsIgnoreCase(sortBy)) {
+            ideaPage = projectIdeaRepository.findPopularApproved(pageable);
+        } else {
+            ideaPage = projectIdeaRepository.findByApproveStatus(true, pageable);
+        }
+
         List<ApprovedIdeaResponse> responses = ideaPage.getContent().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -51,6 +59,10 @@ public class ApprovedIdeaServiceImpl implements ApprovedIdeaService {
                 .meta(meta)
                 .data(responses)
                 .build();
+    }
+
+    private PaginatedApiResponse<ApprovedIdeaResponse> findPopularApprovedIdeas(Pageable pageable) {
+        return listApprovedIdeas(null, pageable);
     }
 
     @Override
@@ -95,6 +107,8 @@ public class ApprovedIdeaServiceImpl implements ApprovedIdeaService {
                 idea.getName(),
                 idea.getDescription(),
                 idea.getDevProfile() != null ? idea.getDevProfile().getName() : "Anonymous",
+                idea.getReactedUsers().size(),
+                idea.getStatus().toString(),
                 idea.getProjectTypes().stream()
                         .map(pt -> pt.getName())
                         .collect(Collectors.toList())
