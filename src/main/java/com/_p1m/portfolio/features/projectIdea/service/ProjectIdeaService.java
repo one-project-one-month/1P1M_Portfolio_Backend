@@ -6,4 +6,6 @@ import jakarta.validation.Valid;
 
 public interface ProjectIdeaService {
     ApiResponse createNewProjectIdea(@Valid ProjectIdeaRequest projectIdeaRequest, String token);
+
+    ApiResponse approveProjectIdeaStatus(Long projectIdeaId, Long status , String token);
 }
