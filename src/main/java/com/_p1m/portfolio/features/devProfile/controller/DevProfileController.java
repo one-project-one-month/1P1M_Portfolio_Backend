@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/portfolio/api/v1/profiles")
+@RequestMapping("/${api.base.path}/profiles")
 @RequiredArgsConstructor
 @Tag(name = "Developer Profile", description = "Endpoints for managing developer profiles")
 public class DevProfileController {

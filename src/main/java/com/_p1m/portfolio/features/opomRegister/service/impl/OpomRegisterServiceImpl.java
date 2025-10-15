@@ -67,7 +67,7 @@ public class OpomRegisterServiceImpl implements OpomRegisterService {
             throw new DuplicateEntityException("Phone Number is Already in Use.");
         }
 
-        // 1️⃣ Save main user
+        // Save main user
         OpomRegister opomRegister = new OpomRegister();
         opomRegister.setName(userRegisterRequest.getName());
         opomRegister.setEmail(userRegisterRequest.getEmail());
@@ -78,7 +78,7 @@ public class OpomRegisterServiceImpl implements OpomRegisterService {
         opomRegister.setStatus(Status.ACTIVE);
         opomRegisterRepository.save(opomRegister);
 
-        // 2️⃣ Save platform links
+        // Save platform links
         for (PlatformLinkDto dto : userRegisterRequest.getPlatformLinks()) {
             Platform platform = platformRepository.findById(dto.getPlatformId())
                     .orElseThrow(() -> new EntityNotFoundException("Platform not found"));
