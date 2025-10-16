@@ -158,4 +158,17 @@ public class ProjectIdeaServiceImpl implements ProjectIdeaService {
                 .data(projectIdeaListResponses)
                 .build();
     }
+
+    @Override
+    public ApiResponse deleteProjectIdea(Long projectIdeaId) {
+        ProjectIdea projectIdea = projectIdeaRepository.findById(projectIdeaId)
+                .orElseThrow(() -> new EntityNotFoundException("Project Idea not found for id: " + projectIdeaId));
+        projectIdeaRepository.delete(projectIdea);
+        return ApiResponse.builder()
+                .success(1)
+                .code(HttpStatus.OK.value())
+                .data(true)
+                .message("Project Idea deleted successfully.")
+                .build();
+    }
 }
