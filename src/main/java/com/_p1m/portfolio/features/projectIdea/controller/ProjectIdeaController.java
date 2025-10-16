@@ -163,5 +163,59 @@ public class ProjectIdeaController {
         ApiResponse response = this.projectIdeaService.deleteProjectIdea(projectIdeaId);
         return ResponseUtils.buildResponse(request, response);
     }
+    
+    @Operation(
+            summary = "React Project Idea",
+            description = "Reaction Project Idea",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "Reacted",
+                            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+                    )
+            }
+    )
+    @PostMapping("/react")
+    public ResponseEntity<ApiResponse> reactProjectIdea(@RequestParam("projectIdeaId") Long projectIdeaId,HttpServletRequest request){
+        String token = jwtUtil.extractTokenFromRequest(request);
+        final ApiResponse response = this.projectIdeaService.reactProjectIdea(projectIdeaId,token);
+        return ResponseUtils.buildResponse(request ,response);
+    }
+    
+    @Operation(
+            summary = "Unreact Project Idea",
+            description = "Remove a user's reaction from a project idea",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "Reaction removed successfully",
+                            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+                    )
+            }
+    )
+    @DeleteMapping("/unreact")
+    public ResponseEntity<ApiResponse> unreactProjectIdea(@RequestParam("projectIdeaId") Long projectIdeaId,
+                                                          HttpServletRequest request) {
+        String token = jwtUtil.extractTokenFromRequest(request);
+        ApiResponse response = projectIdeaService.unreactProjectIdea(projectIdeaId, token);
+        return ResponseUtils.buildResponse(request, response);
+    }
 
+    @Operation(
+            summary = "Get Project Idea Reaction Count",
+            description = "Returns the total number of reactions for a project idea",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "Reaction count fetched successfully",
+                            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+                    )
+            }
+    )
+    @GetMapping("/react/count")
+    public ResponseEntity<ApiResponse> getReactionCount(@RequestParam("projectIdeaId") Long projectIdeaId,
+                                                        HttpServletRequest request) {
+        ApiResponse response = projectIdeaService.getProjectIdeaReactionCount(projectIdeaId);
+        return ResponseUtils.buildResponse(request, response);
+    }
 }

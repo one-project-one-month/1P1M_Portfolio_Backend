@@ -40,6 +40,9 @@ public class ProjectPortfolio extends Auditable {
     @Column(nullable = false)
     private String repoLink;
     
+    @ManyToMany(mappedBy = "reactedProjectPortfolios")
+    private Set<User> reactedUsers = new HashSet<>();
+    
     @ManyToMany
     @JoinTable(
         name = "project_assignment",
