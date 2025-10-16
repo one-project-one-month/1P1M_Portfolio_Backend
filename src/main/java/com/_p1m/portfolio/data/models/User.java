@@ -50,5 +50,13 @@ public class User extends Auditable {
         inverseJoinColumns = @JoinColumn(name = "project_idea_id")
     )
     private Set<ProjectIdea> reactedProjectIdeas = new HashSet<>();
+    
+    @ManyToMany
+    @JoinTable(
+        name = "project_portfolio_reaction",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "project_portfolio_id")
+    )
+    private Set<ProjectPortfolio> reactedProjectPortfolios = new HashSet<>();
 }
 

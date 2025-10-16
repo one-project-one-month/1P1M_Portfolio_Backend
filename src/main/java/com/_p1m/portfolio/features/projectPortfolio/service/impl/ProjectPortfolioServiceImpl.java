@@ -7,8 +7,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.management.RuntimeErrorException;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,11 +19,14 @@ import com._p1m.portfolio.config.response.dto.ApiResponse;
 import com._p1m.portfolio.config.response.dto.PaginatedApiResponse;
 import com._p1m.portfolio.config.response.dto.PaginationMeta;
 import com._p1m.portfolio.data.models.DevProfile;
+import com._p1m.portfolio.data.models.ProjectIdea;
 import com._p1m.portfolio.data.models.ProjectPortfolio;
+import com._p1m.portfolio.data.models.User;
 import com._p1m.portfolio.data.models.lookup.LanguageAndTools;
 import com._p1m.portfolio.data.repositories.DevProfileRepository;
 import com._p1m.portfolio.data.repositories.LanguageAndToolsRepository;
 import com._p1m.portfolio.data.repositories.ProjectPortfolioRepository;
+import com._p1m.portfolio.data.repositories.UserRepository;
 import com._p1m.portfolio.data.storage.CloudStorageService;
 import com._p1m.portfolio.features.projectPortfolio.dto.request.CreateProjectPortfolioRequest;
 import com._p1m.portfolio.features.projectPortfolio.dto.request.DeleteProjectPortfolioPictureRequest;
@@ -48,6 +49,8 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 	private final LanguageAndToolsRepository languageAndToolsRepository;
 
 	private final CloudStorageService cloudStorageService;
+	private final UserRepository userRepository;
+	
 	private final JWTUtil jwtUtil;
 	@Override
 	@Transactional
@@ -240,5 +243,91 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 				.build();
 	}
 
+	@Override
+	@Transactional
+	public ApiResponse reactProjectPortfolio(Long projectPortfolioId, String token) {
+	    String email = jwtUtil.extractEmail(token);
 
+	    User user = userRepository.findByEmail(email)
+	            .orElseThrow(() -> new EntityNotFoundException("User not found from token"));
+
+	    ProjectPortfolio portfolio = projectPortfolioRepository.findById(projectPortfolioId)
+	            .orElseThrow(() -> new com._p1m.portfolio.config.exceptions.EntityNotFoundException("Project Portfolio Does not Exist."));
+
+	    if (portfolio.getReactedUsers().contains(user)) {
+	        return ApiResponse.builder()
+	                .success(0)
+	                .code(HttpStatus.CONFLICT.value())
+	                .message("You have already reacted to this project.")
+	                .data(false)
+	                .meta(Map.of("timestamp", System.currentTimeMillis()))
+	                .build();
+	    }
+
+	    portfolio.getReactedUsers().add(user);
+	    user.getReactedProjectPortfolios().add(portfolio);
+
+	    projectPortfolioRepository.save(portfolio);
+
+	    return ApiResponse.builder()
+	            .success(1)
+	            .code(HttpStatus.CREATED.value())
+	            .message("Reacted successfully.")
+	            .data(true)
+	            .meta(Map.of("timestamp", System.currentTimeMillis()))
+	            .build();
+	}
+
+	
+	@Override
+	@Transactional
+	public ApiResponse unreactProjectPortfolio(Long projectPortfolioId, String token) {
+	    String email = jwtUtil.extractEmail(token);
+	    User user = userRepository.findByEmail(email)
+	            .orElseThrow(() -> new EntityNotFoundException("User not found from token"));
+
+	    ProjectPortfolio projectPortfolio = projectPortfolioRepository.findById(projectPortfolioId)
+	            .orElseThrow(() -> new com._p1m.portfolio.config.exceptions.EntityNotFoundException("Project Portfolio Does not Exist."));
+
+	    boolean removed = projectPortfolio.getReactedUsers().remove(user);
+	    user.getReactedProjectPortfolios().remove(projectPortfolio);
+	    projectPortfolioRepository.save(projectPortfolio);
+	    
+	    if (removed) {
+	        return ApiResponse.builder()
+	                .success(1)
+	                .code(HttpStatus.OK.value())
+	                .message("Reaction removed successfully.")
+	                .data(true)
+	                .meta(Map.of("timestamp", System.currentTimeMillis()))
+	                .build();
+	    } else {
+	        return ApiResponse.builder()
+	                .success(0)
+	                .code(HttpStatus.NOT_FOUND.value())
+	                .message("User had not reacted to this project idea.")
+	                .data(false)
+	                .meta(Map.of("timestamp", System.currentTimeMillis()))
+	                .build();
+	    }
+	}
+	
+	@Override
+	public ApiResponse getProjectPortfolioReactionCount(Long projectPortfolioId) {
+		ProjectPortfolio projectIdea = projectPortfolioRepository.findById(projectPortfolioId)
+	            .orElseThrow(() -> new com._p1m.portfolio.config.exceptions.EntityNotFoundException("Project Portfolio Does not Exist."));
+
+	    int reactionCount = projectIdea.getReactedUsers().size();
+
+	    return ApiResponse.builder()
+	            .success(1)
+	            .code(HttpStatus.OK.value())
+	            .message("Reaction count fetched successfully.")
+	            .data(Map.of(
+	                "projectPortfolioId", projectPortfolioId,
+	                "reactionCount", reactionCount
+	            ))
+	            .meta(Map.of("timestamp", System.currentTimeMillis()))
+	            .build();
+	}
 }
