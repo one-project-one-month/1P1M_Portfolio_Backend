@@ -15,4 +15,8 @@ public interface ProjectIdeaService {
     PaginatedApiResponse<ProjectIdeaListResponse> getAllPaginatedProjectIdeaList(String keyword, Pageable pageable);
 
     ApiResponse deleteProjectIdea(Long projectIdeaId);
+    
+    ApiResponse reactProjectIdea(Long projectIdeaId,String token);
+    ApiResponse unreactProjectIdea(Long projectIdeaId, String token);
+    ApiResponse getProjectIdeaReactionCount(Long projectIdeaId);
 }

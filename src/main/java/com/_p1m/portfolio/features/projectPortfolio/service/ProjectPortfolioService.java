@@ -18,4 +18,8 @@ public interface ProjectPortfolioService {
     ApiResponse updateProjectPortfolio(final UpdateProjectPortfolioRequest updateRequest,final Long projectPortfolioId);
     ApiResponse deleteProjectPortfolio(final Long projectPortfolioId);
     ApiResponse deleteProjectPortfolioPicture(final DeleteProjectPortfolioPictureRequest deleteRequest,final Long projectPortfolioId);
+    
+    ApiResponse reactProjectPortfolio(Long projectPortfolioId,String token);
+    ApiResponse unreactProjectPortfolio(Long projectPortfolioId, String token);
+    ApiResponse getProjectPortfolioReactionCount(Long projectPortfolioId);
 }

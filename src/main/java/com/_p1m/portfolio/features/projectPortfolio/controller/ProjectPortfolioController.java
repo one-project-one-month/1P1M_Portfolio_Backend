@@ -270,4 +270,59 @@ public class ProjectPortfolioController {
 	    return ResponseUtils.buildResponse(request, response);
 	}
     
+    @Operation(
+            summary = "React Project portfolio",
+            description = "Reaction Project Portfolio",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "Reacted",
+                            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+                    )
+            }
+    )
+    @PostMapping("/react")
+    public ResponseEntity<ApiResponse> reactProjectPortfolio(@RequestParam("projectPortfolioId") Long projectPortfolioId,HttpServletRequest request){
+        String token = jwtUtil.extractTokenFromRequest(request);
+        final ApiResponse response = this.projectPortfolioService.reactProjectPortfolio(projectPortfolioId,token);
+        return ResponseUtils.buildResponse(request ,response);
+    }
+    
+    @Operation(
+            summary = "Unreact Project Idea",
+            description = "Remove a user's reaction from a project portfolio",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "Reaction removed successfully",
+                            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+                    )
+            }
+    )
+    @DeleteMapping("/unreact")
+    public ResponseEntity<ApiResponse> unreactProjectPortfolio(@RequestParam("projectPortfolioId") Long projectPortfolioId,
+                                                          HttpServletRequest request) {
+        String token = jwtUtil.extractTokenFromRequest(request);
+        ApiResponse response = projectPortfolioService.unreactProjectPortfolio(projectPortfolioId, token);
+        return ResponseUtils.buildResponse(request, response);
+    }
+
+    @Operation(
+            summary = "Get Project Idea Reaction Count",
+            description = "Returns the total number of reactions for a project portfolio",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "Reaction count fetched successfully",
+                            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+                    )
+            }
+    )
+    @GetMapping("/react/count")
+    public ResponseEntity<ApiResponse> getReactionCount(@RequestParam("projectPortfolioId") Long projectPortfolioId,
+                                                        HttpServletRequest request) {
+        ApiResponse response = projectPortfolioService.getProjectPortfolioReactionCount(projectPortfolioId);
+        return ResponseUtils.buildResponse(request, response);
+    }
+    
 }

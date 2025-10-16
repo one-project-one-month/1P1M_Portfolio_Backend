@@ -1,29 +1,36 @@
 package com._p1m.portfolio.features.projectIdea.service.impl;
 
-import com._p1m.portfolio.config.exceptions.EntityNotFoundException;
-import com._p1m.portfolio.config.response.dto.ApiResponse;
-import com._p1m.portfolio.config.response.dto.PaginatedApiResponse;
-import com._p1m.portfolio.config.response.dto.PaginationMeta;
-import com._p1m.portfolio.data.enums.ProjectIdeaStatus;
-import com._p1m.portfolio.data.models.*;
-import com._p1m.portfolio.data.models.lookup.ProjectType;
-import com._p1m.portfolio.data.repositories.DevProfileRepository;
-import com._p1m.portfolio.data.repositories.ProjectIdeaRepository;
-import com._p1m.portfolio.data.repositories.ProjectTypeRepository;
-import com._p1m.portfolio.data.repositories.UserRepository;
-import com._p1m.portfolio.features.opomRegister.dto.response.OpomRegisterResponse;
-import com._p1m.portfolio.features.projectIdea.dto.request.ProjectIdeaRequest;
-import com._p1m.portfolio.features.projectIdea.dto.response.ProjectIdeaListResponse;
-import com._p1m.portfolio.features.projectIdea.service.ProjectIdeaService;
-import com._p1m.portfolio.security.JWT.JWTUtil;
-import lombok.RequiredArgsConstructor;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import com._p1m.portfolio.config.exceptions.EntityNotFoundException;
+import com._p1m.portfolio.config.response.dto.ApiResponse;
+import com._p1m.portfolio.config.response.dto.PaginatedApiResponse;
+import com._p1m.portfolio.config.response.dto.PaginationMeta;
+import com._p1m.portfolio.data.enums.ProjectIdeaStatus;
+import com._p1m.portfolio.data.models.DevProfile;
+import com._p1m.portfolio.data.models.ProjectIdea;
+import com._p1m.portfolio.data.models.User;
+import com._p1m.portfolio.data.models.lookup.ProjectType;
+import com._p1m.portfolio.data.repositories.DevProfileRepository;
+import com._p1m.portfolio.data.repositories.ProjectIdeaRepository;
+import com._p1m.portfolio.data.repositories.ProjectTypeRepository;
+import com._p1m.portfolio.data.repositories.UserRepository;
+import com._p1m.portfolio.features.projectIdea.dto.request.ProjectIdeaRequest;
+import com._p1m.portfolio.features.projectIdea.dto.response.ProjectIdeaListResponse;
+import com._p1m.portfolio.features.projectIdea.service.ProjectIdeaService;
+import com._p1m.portfolio.security.JWT.JWTUtil;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -171,4 +178,90 @@ public class ProjectIdeaServiceImpl implements ProjectIdeaService {
                 .message("Project Idea deleted successfully.")
                 .build();
     }
+
+
+    @Override
+    @Transactional
+    public ApiResponse reactProjectIdea(Long projectIdeaId, String token) {
+        String email = jwtUtil.extractEmail(token);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found from token"));
+
+        ProjectIdea projectIdea = projectIdeaRepository.findById(projectIdeaId)
+                .orElseThrow(() -> new com._p1m.portfolio.config.exceptions.EntityNotFoundException("Project Idea Does not Exist."));
+
+        if (projectIdea.getReactedUsers().contains(user)) {
+            return ApiResponse.builder()
+                    .success(0)
+                    .code(HttpStatus.CONFLICT.value()) 
+                    .message("You have already reacted to this project.")
+                    .data(false)
+                    .meta(Map.of("timestamp", System.currentTimeMillis()))
+                    .build();
+        }
+
+        projectIdea.getReactedUsers().add(user);
+        user.getReactedProjectIdeas().add(projectIdea);
+
+        return ApiResponse.builder()
+                .success(1)
+                .code(HttpStatus.CREATED.value())
+                .message("Reacted successfully.")
+                .data(true)
+                .meta(Map.of("timestamp", System.currentTimeMillis()))
+                .build();
+    }
+	
+	@Override
+	@Transactional
+	public ApiResponse unreactProjectIdea(Long projectIdeaId, String token) {
+	    String email = jwtUtil.extractEmail(token);
+	    User user = userRepository.findByEmail(email)
+	            .orElseThrow(() -> new EntityNotFoundException("User not found from token"));
+
+	    ProjectIdea projectIdea = projectIdeaRepository.findById(projectIdeaId)
+	            .orElseThrow(() -> new com._p1m.portfolio.config.exceptions.EntityNotFoundException("Project Idea Does not Exist."));
+
+	    boolean removed = projectIdea.getReactedUsers().remove(user);
+	    user.getReactedProjectIdeas().remove(projectIdea);
+	    if (removed) {
+	        return ApiResponse.builder()
+	                .success(1)
+	                .code(HttpStatus.OK.value())
+	                .message("Reaction removed successfully.")
+	                .data(true)
+	                .meta(Map.of("timestamp", System.currentTimeMillis()))
+	                .build();
+	    } else {
+	        return ApiResponse.builder()
+	                .success(0)
+	                .code(HttpStatus.NOT_FOUND.value())
+	                .message("User had not reacted to this project idea.")
+	                .data(false)
+	                .meta(Map.of("timestamp", System.currentTimeMillis()))
+	                .build();
+	    }
+	}
+	
+	@Override
+	public ApiResponse getProjectIdeaReactionCount(Long projectIdeaId) {
+	    ProjectIdea projectIdea = projectIdeaRepository.findById(projectIdeaId)
+	            .orElseThrow(() -> new com._p1m.portfolio.config.exceptions.EntityNotFoundException("Project Idea Does not Exist."));
+
+	    int reactionCount = projectIdea.getReactedUsers().size();
+
+	    return ApiResponse.builder()
+	            .success(1)
+	            .code(HttpStatus.OK.value())
+	            .message("Reaction count fetched successfully.")
+	            .data(Map.of(
+	                "projectIdeaId", projectIdeaId,
+	                "reactionCount", reactionCount
+	            ))
+	            .meta(Map.of("timestamp", System.currentTimeMillis()))
+	            .build();
+	}
+
+
 }
