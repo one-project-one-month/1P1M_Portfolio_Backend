@@ -13,4 +13,6 @@ public interface ProjectIdeaService {
     ApiResponse approveProjectIdeaStatus(Long projectIdeaId, Long status , String token);
 
     PaginatedApiResponse<ProjectIdeaListResponse> getAllPaginatedProjectIdeaList(String keyword, Pageable pageable);
+
+    ApiResponse deleteProjectIdea(Long projectIdeaId);
 }

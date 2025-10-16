@@ -144,4 +144,24 @@ public class ProjectIdeaController {
         return ResponseUtils.buildPaginatedResponse(request, response);
     }
 
+    @Operation(
+            summary = "Delete project idea",
+            description = "Delete all data of project idea",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "Project Idea deleted successfully.",
+                            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+                    )
+            }
+    )
+    @DeleteMapping
+    public ResponseEntity<ApiResponse> deleteProjectIdea(
+            @RequestParam("projectIdeaId") Long projectIdeaId,
+            HttpServletRequest request
+    ) {
+        ApiResponse response = this.projectIdeaService.deleteProjectIdea(projectIdeaId);
+        return ResponseUtils.buildResponse(request, response);
+    }
+
 }
