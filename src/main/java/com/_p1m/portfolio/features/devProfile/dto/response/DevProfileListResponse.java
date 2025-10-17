@@ -16,5 +16,5 @@ public class DevProfileListResponse {
     private String github;
     private String linkedIn;
     private String aboutDev;
-    private String role;
+    private List<String> tech_stack;
 }
