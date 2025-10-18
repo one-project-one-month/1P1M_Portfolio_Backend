@@ -102,7 +102,13 @@ public class DevProfileServiceImpl implements DevProfileService {
                         .profilePictureUrl(devProfile.getProfilePictureUrl())
                         .github(devProfile.getGithub())
                         .linkedIn(devProfile.getLinkedIn())
-                        .role(devProfile.getRole())
+                        .tech_stack(
+                                devProfile.getTechStacks() != null
+                                        ? devProfile.getTechStacks().stream()
+                                        .map(TechStack::getName)
+                                        .toList()
+                                        : new ArrayList<>()
+                        )
                         .build()
                 ).toList();
 

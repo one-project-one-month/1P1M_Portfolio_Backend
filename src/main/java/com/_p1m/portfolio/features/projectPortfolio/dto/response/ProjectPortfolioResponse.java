@@ -16,6 +16,7 @@ public class ProjectPortfolioResponse {
 	String description;
 	String projectLink;
 	String repoLink;
+	private long reaction_count;
 	AssignedDevs assignedDevs;
 	ProjectPortfolioDetails projectPortfolioDetails;
 }
