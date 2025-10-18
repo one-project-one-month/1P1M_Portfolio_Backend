@@ -30,9 +30,6 @@ public class UpdateDevProfileRequest {
     @Size(max = 1000, message = "About section cannot exceed 1000 characters.")
     private String aboutDev;
 
-    @Size(max = 1000, message = "About section cannot exceed 1000 characters.")
-    private String role;
-
     @NotEmpty(message = "At least one tech stack is required.")
     private List<String> techStacks;
 }
