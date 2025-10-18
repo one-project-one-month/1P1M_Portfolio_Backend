@@ -164,6 +164,9 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 						.description(project.getDescription())
 						.projectLink(project.getProjectLink())
 						.repoLink(project.getRepoLink())
+						.reaction_count(project.getReactedUsers() != null
+                                ? project.getReactedUsers().size()
+                                : 0)
 						.assignedDevs(new AssignedDevs(
 								project.getDevProfiles().stream()
 										.map(DevProfile::getId)
