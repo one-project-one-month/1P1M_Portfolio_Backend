@@ -143,6 +143,7 @@ public class ProjectIdeaServiceImpl implements ProjectIdeaService {
                         .dev_id(projectIdea.getDevProfile().getId())
                         .devName(projectIdea.getDevProfile().getName())
                         .profilePictureUrl(projectIdea.getDevProfile().getProfilePictureUrl())
+                        .status(projectIdea.getStatus())
                         .reaction_count(projectIdea.getReactedUsers() != null
                                 ? projectIdea.getReactedUsers().size()
                                 : 0)
