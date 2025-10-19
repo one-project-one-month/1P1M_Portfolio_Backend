@@ -1,5 +1,6 @@
 package com._p1m.portfolio.features.projectIdea.dto.response;
 
+import com._p1m.portfolio.data.enums.ProjectIdeaStatus;
 import lombok.*;
 
 import java.util.List;
@@ -19,4 +20,5 @@ public class ProjectIdeaListResponse {
     private String devName;
     private long reaction_count;
     private List<String> projectTypes;
+    private ProjectIdeaStatus status;
 }
