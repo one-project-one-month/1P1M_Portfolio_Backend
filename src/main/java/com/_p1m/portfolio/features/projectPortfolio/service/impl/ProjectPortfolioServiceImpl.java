@@ -254,14 +254,6 @@ public ApiResponse updateProjectPortfolio(UpdateProjectPortfolioRequest updateRe
         projectPortfolio.setDevProfiles(updatedProfiles);
     }
 
-    if (updateRequest.languageAndTools() != null && !updateRequest.languageAndTools().isEmpty()) {
-        Set<LanguageAndTools> toolsSet = updateRequest.languageAndTools().stream()
-            .map(toolName -> languageAndToolsRepository.findByName(toolName)
-                .orElseGet(() -> languageAndToolsRepository.save(new LanguageAndTools(toolName))))
-            .collect(Collectors.toSet());
-
-        projectPortfolio.setLanguageAndTools(toolsSet);
-    }
 
     projectPortfolioRepository.save(projectPortfolio);
 
