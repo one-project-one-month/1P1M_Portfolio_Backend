@@ -138,8 +138,9 @@ public class ProjectIdeaController {
         Sort.Direction direction = sortDirection.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
 
+        String token = jwtUtil.extractTokenFromRequest(request);
         PaginatedApiResponse<ProjectIdeaListResponse> response =
-                this.projectIdeaService.getAllPaginatedProjectIdeaList(keyword, pageable);
+                this.projectIdeaService.getAllPaginatedProjectIdeaList(keyword, pageable, token);
 
         return ResponseUtils.buildPaginatedResponse(request, response);
     }

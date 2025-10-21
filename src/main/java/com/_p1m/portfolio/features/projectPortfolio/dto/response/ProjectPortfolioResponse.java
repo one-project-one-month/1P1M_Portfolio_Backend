@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -18,5 +20,6 @@ public class ProjectPortfolioResponse {
 	String repoLink;
 	private long reaction_count;
 	AssignedDevs assignedDevs;
+    private List<Long> reactedProjectPortfolios;
 	ProjectPortfolioDetails projectPortfolioDetails;
 }

@@ -20,5 +20,6 @@ public class ProjectIdeaListResponse {
     private String devName;
     private long reaction_count;
     private List<String> projectTypes;
+    private List<Long> reactedProjects;
     private ProjectIdeaStatus status;
 }
