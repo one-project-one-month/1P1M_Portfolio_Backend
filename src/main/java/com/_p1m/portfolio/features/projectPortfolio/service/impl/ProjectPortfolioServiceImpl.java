@@ -61,7 +61,7 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 
 		Set<DevProfile> devProfiles = new HashSet<>();
 		devProfiles.add(devProfile);
-if (request.developerEmails() != null) {
+if (createRequest.developerEmails() != null) {
             for (String devEmail : request.developerEmails()) {
                 
                 if (devEmail.equalsIgnoreCase(email)) continue;
