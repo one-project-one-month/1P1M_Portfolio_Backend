@@ -56,13 +56,10 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 	@Transactional
 	public ApiResponse createProjectPortfolio(CreateProjectPortfolioRequest createRequest, String token) {
 		String email = jwtUtil.extractEmail(token);
-		DevProfile devProfile = devProfileRepository.findByUserEmail(email)
-				.orElseThrow(() -> new EntityNotFoundException("DevProfile not found for email: " + email));
-
 		Set<DevProfile> devProfiles = new HashSet<>();
-		devProfiles.add(devProfile);
+		
 if (createRequest.developerEmails() != null) {
-            for (String devEmail : request.developerEmails()) {
+            for (String devEmail : createRequest.developerEmails()) {
                 
                 if (devEmail.equalsIgnoreCase(email)) continue;
 
