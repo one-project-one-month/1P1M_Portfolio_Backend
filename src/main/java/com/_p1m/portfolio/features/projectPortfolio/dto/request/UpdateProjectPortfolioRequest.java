@@ -2,7 +2,7 @@ package com._p1m.portfolio.features.projectPortfolio.dto.request;
 
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-
+import java.util.List;
 public record UpdateProjectPortfolioRequest(
 	String name,
 	
