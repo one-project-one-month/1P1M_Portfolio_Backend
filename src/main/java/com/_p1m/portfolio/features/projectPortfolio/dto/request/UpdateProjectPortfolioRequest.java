@@ -12,5 +12,7 @@ public record UpdateProjectPortfolioRequest(
 	@Pattern(regexp = "^(https?://)?(www\\.)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$", message = "Invalid project link format.")
 	String projectLink,
 	
+	List<String> devEmails, 
+
 	@Pattern(regexp = "^(https?://)?(www\\.)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$", message = "Invalid repository link format.")
 	String repoLink) {}
