@@ -14,7 +14,7 @@ public interface ProjectPortfolioService {
     ApiResponse createProjectPortfolio(final CreateProjectPortfolioRequest createRequest,final String token);
     ApiResponse uploadFile(final UploadFileRequest fileRequest,final Long projectPortfolioId);
     ApiResponse retrieveSpecificProjectPortfolio(final Long projectPortfolioId);
-    PaginatedApiResponse<ProjectPortfolioResponse> getAllpaginatedProjectProfiles(final String keyword,final Pageable pageable);
+    PaginatedApiResponse<ProjectPortfolioResponse> getAllpaginatedProjectProfiles(final String keyword,final Pageable pageable , String token);
     ApiResponse updateProjectPortfolio(final UpdateProjectPortfolioRequest updateRequest,final Long projectPortfolioId);
     ApiResponse deleteProjectPortfolio(final Long projectPortfolioId);
     ApiResponse deleteProjectPortfolioPicture(final DeleteProjectPortfolioPictureRequest deleteRequest,final Long projectPortfolioId);

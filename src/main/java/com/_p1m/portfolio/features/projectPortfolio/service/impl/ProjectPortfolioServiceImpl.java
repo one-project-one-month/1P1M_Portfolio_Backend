@@ -142,7 +142,11 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 
 	@Override
 	public PaginatedApiResponse<ProjectPortfolioResponse> getAllpaginatedProjectProfiles(
-			String keyword, Pageable pageable) {
+			String keyword, Pageable pageable , String token) {
+
+        String email = jwtUtil.extractEmail(token);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found from token"));
 
 		Specification<ProjectPortfolio> spec = (root, query, criteriaBuilder) -> {
 			if (keyword != null && !keyword.trim().isEmpty()) {
@@ -153,6 +157,11 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 			}
 			return null;
 		};
+
+        Set<Long> reactedProjectPortfolios = user.getReactedProjectPortfolios()
+                .stream()
+                .map(ProjectPortfolio::getId)
+                .collect(Collectors.toSet());
 
 		Page<ProjectPortfolio> projectPage = this.projectPortfolioRepository.findAll(spec, pageable);
 
@@ -177,6 +186,11 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 										.map(LanguageAndTools::getName)
 										.collect(Collectors.toList())
 						))
+                        .reactedProjectPortfolios(
+                                user.getReactedProjectPortfolios().stream()
+                                        .map(ProjectPortfolio::getId)
+                                        .toList()
+                        )
 						.build()
 				).collect(Collectors.toList());
 

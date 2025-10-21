@@ -67,7 +67,6 @@ public class DevProfileServiceImpl implements DevProfileService {
                 .linkedIn(request.getLinkedIn())
                 .aboutDev(request.getAboutDev())
                 .techStacks(resolvedTechStacks)
-                .role(request.getRole())
                 .build();
 
         devProfileRepository.save(devProfile);
@@ -146,7 +145,6 @@ public class DevProfileServiceImpl implements DevProfileService {
         devProfile.setGithub(updateRequest.getGithub());
         devProfile.setLinkedIn(updateRequest.getLinkedIn());
         devProfile.setAboutDev(updateRequest.getAboutDev());
-        devProfile.setRole(updateRequest.getRole());
 
         // Update TechStacks (clear old and add new)
         List<TechStack> resolvedTechStacks = new ArrayList<>();

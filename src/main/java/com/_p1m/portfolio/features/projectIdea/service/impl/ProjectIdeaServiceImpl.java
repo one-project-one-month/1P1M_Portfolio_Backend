@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -123,7 +124,11 @@ public class ProjectIdeaServiceImpl implements ProjectIdeaService {
     }
 
     @Override
-    public PaginatedApiResponse<ProjectIdeaListResponse> getAllPaginatedProjectIdeaList(String keyword, Pageable pageable) {
+    public PaginatedApiResponse<ProjectIdeaListResponse> getAllPaginatedProjectIdeaList(String keyword, Pageable pageable , String token) {
+        String email = jwtUtil.extractEmail(token);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found from token"));
+
         Specification<ProjectIdea> spec = (root, query, criteriaBuilder) -> {
             if (keyword != null && !keyword.trim().isEmpty()) {
                 return criteriaBuilder.like(
@@ -134,6 +139,11 @@ public class ProjectIdeaServiceImpl implements ProjectIdeaService {
             return null;
         };
 
+        Set<Long> reactedProjectIds = user.getReactedProjectIdeas()
+                .stream()
+                .map(ProjectIdea::getId)
+                .collect(Collectors.toSet());
+
         Page<ProjectIdea> projectIdeas = this.projectIdeaRepository.findAll(spec, pageable);
         List<ProjectIdeaListResponse> projectIdeaListResponses = projectIdeas.getContent().stream()
                 .map(projectIdea -> ProjectIdeaListResponse.builder()
@@ -143,12 +153,18 @@ public class ProjectIdeaServiceImpl implements ProjectIdeaService {
                         .dev_id(projectIdea.getDevProfile().getId())
                         .devName(projectIdea.getDevProfile().getName())
                         .profilePictureUrl(projectIdea.getDevProfile().getProfilePictureUrl())
+                        .status(projectIdea.getStatus())
                         .reaction_count(projectIdea.getReactedUsers() != null
                                 ? projectIdea.getReactedUsers().size()
                                 : 0)
                         .projectTypes(projectIdea.getProjectTypes().stream()
                                 .map(ProjectType::getName)
                                 .toList())
+                        .reactedProjects(
+                                user.getReactedProjectIdeas().stream()
+                                        .map(ProjectIdea::getId)
+                                        .toList()
+                        )
                         .build()
                 ).toList();
 

@@ -171,8 +171,9 @@ public class ProjectPortfolioController {
 	    Sort.Direction direction = sortDirection.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
 	    Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
 
+        String token = jwtUtil.extractTokenFromRequest(request);
 	    PaginatedApiResponse<ProjectPortfolioResponse> response =
-	    		this.projectPortfolioService.getAllpaginatedProjectProfiles(keyword, pageable);
+	    		this.projectPortfolioService.getAllpaginatedProjectProfiles(keyword, pageable , token);
 
 	    return ResponseUtils.buildPaginatedResponse(request, response);
 	}
