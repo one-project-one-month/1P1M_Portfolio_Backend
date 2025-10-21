@@ -26,6 +26,10 @@ public record CreateProjectPortfolioRequest(
 
     @NotNull(message = "Language and tools list cannot be null.")
     @Size(min = 1, message = "At least one language or tool must be provided.")
-    List<String> languageAndTools
+    List<String> languageAndTools,
+
+    @NotNull(message = "Developer emails cannot be null.")
+    @Size(min = 1, message = "At least one developer email must be provided.")
+    List<String> developerEmails
 ) {}
 

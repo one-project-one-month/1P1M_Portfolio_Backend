@@ -56,12 +56,19 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 	@Transactional
 	public ApiResponse createProjectPortfolio(CreateProjectPortfolioRequest createRequest, String token) {
 		String email = jwtUtil.extractEmail(token);
-		DevProfile devProfile = devProfileRepository.findByUserEmail(email)
-				.orElseThrow(() -> new EntityNotFoundException("DevProfile not found for email: " + email));
-
 		Set<DevProfile> devProfiles = new HashSet<>();
-		devProfiles.add(devProfile);
+		
+if (createRequest.developerEmails() != null) {
+            for (String devEmail : createRequest.developerEmails()) {
+                
+                if (devEmail.equalsIgnoreCase(email)) continue;
 
+                DevProfile devProfile = devProfileRepository.findByUserEmail(devEmail)
+                    .orElseThrow(() -> new EntityNotFoundException("DevProfile not found for email: " + devEmail));
+
+                devProfiles.add(devProfile);
+            }
+}
 		List<String> languageAndTools = createRequest.languageAndTools();
 
 		Set<LanguageAndTools> savedLanguagesAndTools = new HashSet<>();
@@ -208,26 +215,55 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 				.build();
 	}
 
-	@Override
-	@Transactional
-	public ApiResponse updateProjectPortfolio(UpdateProjectPortfolioRequest updateRequest, Long projectPortfolioId) {
-		ProjectPortfolio projectPortfolio = projectPortfolioRepository.findById(projectPortfolioId)
-				.orElseThrow(() -> new EntityNotFoundException("Project portfolio not found for id: " + projectPortfolioId));
+@Override
+@Transactional
+public ApiResponse updateProjectPortfolio(UpdateProjectPortfolioRequest updateRequest, Long projectPortfolioId, String token) {
+    String email = jwtUtil.extractEmail(token);
 
-		Optional.ofNullable(updateRequest.name()).ifPresent(projectPortfolio::setName);
-		Optional.ofNullable(updateRequest.description()).ifPresent(projectPortfolio::setDescription);
-		Optional.ofNullable(updateRequest.projectLink()).ifPresent(projectPortfolio::setProjectLink);
-		Optional.ofNullable(updateRequest.repoLink()).ifPresent(projectPortfolio::setRepoLink);
+    DevProfile devProfile = devProfileRepository.findByUserEmail(email)
+        .orElseThrow(() -> new EntityNotFoundException("DevProfile not found for email: " + email));
 
-		projectPortfolioRepository.save(projectPortfolio);
+    ProjectPortfolio projectPortfolio = projectPortfolioRepository.findById(projectPortfolioId)
+        .orElseThrow(() -> new EntityNotFoundException("Project portfolio not found for id: " + projectPortfolioId));
 
-		return ApiResponse.builder()
-				.success(1)
-				.code(HttpStatus.OK.value())
-				.data(true)
-				.message("Project portfolio updated successfully.")
-				.build();
-	}
+    boolean isAssigned = projectPortfolio.getDevProfiles().stream()
+        .anyMatch(dev -> dev.getId().equals(devProfile.getId()));
+
+    if (!isAssigned) {
+        throw new EntityNotFoundException("You are not authorized to update this project.");
+    }
+
+    Optional.ofNullable(updateRequest.name()).ifPresent(projectPortfolio::setName);
+    Optional.ofNullable(updateRequest.description()).ifPresent(projectPortfolio::setDescription);
+    Optional.ofNullable(updateRequest.projectLink()).ifPresent(projectPortfolio::setProjectLink);
+    Optional.ofNullable(updateRequest.repoLink()).ifPresent(projectPortfolio::setRepoLink);
+
+    if (updateRequest.devEmails() != null && !updateRequest.devEmails().isEmpty()) {
+        Set<DevProfile> updatedProfiles = new HashSet<>();
+
+        projectPortfolio.getDevProfiles().clear();
+
+        updatedProfiles.add(devProfile);
+
+        List<DevProfile> additionalProfiles = devProfileRepository.findByUserEmailIn(updateRequest.devEmails());
+        updatedProfiles.addAll(additionalProfiles);
+
+        projectPortfolio.setDevProfiles(updatedProfiles);
+    }
+
+
+    projectPortfolioRepository.save(projectPortfolio);
+
+    return ApiResponse.builder()
+        .success(1)
+        .code(HttpStatus.OK.value())
+        .data(true)
+        .message("Project portfolio updated successfully.")
+        .build();
+}
+
+
+
 
 	@Override
 	public ApiResponse deleteProjectPortfolio(Long projectPortfolioId) {

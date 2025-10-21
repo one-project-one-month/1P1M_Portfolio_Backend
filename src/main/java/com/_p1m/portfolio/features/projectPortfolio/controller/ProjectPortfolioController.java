@@ -212,7 +212,8 @@ public class ProjectPortfolioController {
 	    @RequestBody @Valid UpdateProjectPortfolioRequest updateRequest,
 	    HttpServletRequest request
 	) {
-	    ApiResponse response = this.projectPortfolioService.updateProjectPortfolio(updateRequest,projectPortfolioId);
+		String token = jwtUtil.extractTokenFromRequest(request);
+	    ApiResponse response = this.projectPortfolioService.updateProjectPortfolio(updateRequest,projectPortfolioId,token);
 	    return ResponseUtils.buildResponse(request, response);
 	}
     

@@ -1,7 +1,7 @@
 package com._p1m.portfolio.data.repositories;
 
 import java.util.Optional;
-
+import java.util.List;
 import com._p1m.portfolio.data.models.ProjectPortfolio;
 import com._p1m.portfolio.data.models.User;
 import org.springframework.data.domain.Page;
@@ -16,7 +16,7 @@ import com._p1m.portfolio.data.models.DevProfile;
 public interface DevProfileRepository extends JpaRepository<DevProfile, Long> {
 	Optional<DevProfile> findByUserEmail(String email);
     boolean existsByUser(User user);
-
+List<DevProfile> findByUserEmailIn(List<String> emails);
     Optional<DevProfile> findByUserId(Long id);
 
     Page<DevProfile> findAll(Specification<ProjectPortfolio> spec, Pageable pageable);
