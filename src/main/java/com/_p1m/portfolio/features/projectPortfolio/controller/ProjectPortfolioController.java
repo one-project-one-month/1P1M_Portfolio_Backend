@@ -66,7 +66,8 @@ public class ProjectPortfolioController {
     	                              "description": "A brief description of the project.",
     	                              "projectLink": "http://example.com/project",
     	                              "repoLink": "http://github.com/project-repo",
-    	                              "languageAndTools": ["Java", "Spring Boot", "React"]
+    	                              "languageAndTools": ["Java", "Spring Boot", "React"],
+    	                              "developerEmails": ["minzayarmaung2002@gmail.com"]
     	                            }
     	                            """
     	                )
