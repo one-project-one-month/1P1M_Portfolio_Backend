@@ -58,17 +58,17 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 		String email = jwtUtil.extractEmail(token);
 		Set<DevProfile> devProfiles = new HashSet<>();
 		
-if (createRequest.developerEmails() != null) {
-            for (String devEmail : createRequest.developerEmails()) {
-                
-                if (devEmail.equalsIgnoreCase(email)) continue;
+        if (createRequest.developerEmails() != null) {
+                    for (String devEmail : createRequest.developerEmails()) {
 
-                DevProfile devProfile = devProfileRepository.findByUserEmail(devEmail)
-                    .orElseThrow(() -> new EntityNotFoundException("DevProfile not found for email: " + devEmail));
+                        if (devEmail.equalsIgnoreCase(email)) continue;
 
-                devProfiles.add(devProfile);
-            }
-}
+                        DevProfile devProfile = devProfileRepository.findByUserEmail(devEmail)
+                            .orElseThrow(() -> new EntityNotFoundException("DevProfile not found for email: " + devEmail));
+
+                        devProfiles.add(devProfile);
+                    }
+        }
 		List<String> languageAndTools = createRequest.languageAndTools();
 
 		Set<LanguageAndTools> savedLanguagesAndTools = new HashSet<>();
@@ -94,7 +94,10 @@ if (createRequest.developerEmails() != null) {
 		return ApiResponse.builder()
 				.success(1)
 				.code(HttpStatus.CREATED.value())
-				.data(true)
+                .data(Map.of(
+                        "projectId",projectPortfolio.getId(),
+                        "projectName", projectPortfolio.getName()
+                ))
 				.message("Project portfolio created successfully.")
 				.build();
 	}
