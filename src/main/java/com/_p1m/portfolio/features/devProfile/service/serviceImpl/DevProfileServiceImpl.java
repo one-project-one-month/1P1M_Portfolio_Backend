@@ -96,6 +96,7 @@ public class DevProfileServiceImpl implements DevProfileService {
         List<DevProfileListResponse> devProfileListResponses = devProfileResponse.getContent().stream()
                 .map(devProfile -> DevProfileListResponse.builder()
                         .userId(devProfile.getId())
+                        .email(devProfile.getUser().getEmail())
                         .name(devProfile.getName())
                         .aboutDev(devProfile.getAboutDev())
                         .profilePictureUrl(devProfile.getProfilePictureUrl())
@@ -178,6 +179,7 @@ public class DevProfileServiceImpl implements DevProfileService {
 
         return DevProfileResponse.builder()
                 .userId(profile.getUser().getId())
+                .email(profile.getUser().getEmail())
                 .name(profile.getName())
                 .profilePictureUrl(profile.getProfilePictureUrl())
                 .github(profile.getGithub())

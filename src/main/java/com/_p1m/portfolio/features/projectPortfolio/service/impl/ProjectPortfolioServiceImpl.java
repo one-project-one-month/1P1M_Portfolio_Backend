@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com._p1m.portfolio.config.exceptions.BadRequestException;
 import com._p1m.portfolio.config.exceptions.EntityNotFoundException;
@@ -19,7 +20,6 @@ import com._p1m.portfolio.config.response.dto.ApiResponse;
 import com._p1m.portfolio.config.response.dto.PaginatedApiResponse;
 import com._p1m.portfolio.config.response.dto.PaginationMeta;
 import com._p1m.portfolio.data.models.DevProfile;
-import com._p1m.portfolio.data.models.ProjectIdea;
 import com._p1m.portfolio.data.models.ProjectPortfolio;
 import com._p1m.portfolio.data.models.User;
 import com._p1m.portfolio.data.models.lookup.LanguageAndTools;
@@ -38,7 +38,6 @@ import com._p1m.portfolio.features.projectPortfolio.dto.response.ProjectPortfoli
 import com._p1m.portfolio.features.projectPortfolio.service.ProjectPortfolioService;
 import com._p1m.portfolio.security.JWT.JWTUtil;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -151,6 +150,7 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public PaginatedApiResponse<ProjectPortfolioResponse> getAllpaginatedProjectProfiles(
 			String keyword, Pageable pageable , String token) {
 

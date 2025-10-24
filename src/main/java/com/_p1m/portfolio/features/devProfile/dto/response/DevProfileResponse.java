@@ -11,6 +11,7 @@ import java.util.List;
 @Builder
 public class DevProfileResponse {
     private Long userId;
+    private String email;
     private String name;
     private String profilePictureUrl;
     private String github;
