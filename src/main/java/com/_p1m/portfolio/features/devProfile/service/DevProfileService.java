@@ -6,6 +6,7 @@ import com._p1m.portfolio.data.models.DevProfile;
 import com._p1m.portfolio.features.devProfile.dto.request.CreateDevProfileRequest;
 import com._p1m.portfolio.features.devProfile.dto.request.UpdateDevProfileRequest;
 import com._p1m.portfolio.features.devProfile.dto.response.DevProfileListResponse;
+import com._p1m.portfolio.features.projectPortfolio.dto.request.UploadFileRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 
@@ -17,4 +18,6 @@ public interface DevProfileService {
     PaginatedApiResponse<DevProfileListResponse> getAllPaginatedDeveloperList(String keyword, Pageable pageable);
 
     ApiResponse updateDevProfile(@Valid UpdateDevProfileRequest updateRequest, Long id , String token);
+
+    ApiResponse uploadFile(UploadFileRequest fileRequest, Long devProfileId);
 }

@@ -81,7 +81,12 @@ public class ProjectPortfolioController {
     	            content = @Content(
     	                schema = @Schema(implementation = ApiResponse.class)
     	            )
-    	        )
+    	        ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "409",
+                            description = "Project Portfolio Name Already Exists.",
+                            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+                    ),
     	    }
     	)
     @PostMapping

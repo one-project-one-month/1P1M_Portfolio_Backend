@@ -18,9 +18,6 @@ public class CreateDevProfileRequest {
     @NotBlank(message = "Name is required.")
     private String name;
 
-    @URL(message = "Please provide a valid URL for the profile picture.")
-    private String profilePictureUrl;
-
     @URL(message = "Please provide a valid GitHub profile URL.")
     private String github;
 

@@ -53,7 +53,7 @@ public class ProjectIdeaServiceImpl implements ProjectIdeaService {
             return ApiResponse.builder()
                     .success(0)
                     .code(HttpStatus.CONFLICT.value())
-                    .message("Project Name Already Exists.")
+                    .message("Project Idea Name Already Exists.")
                     .data(Map.of("projectName", projectIdeaRequest.getProjectName()))
                     .meta(Map.of("timestamp", System.currentTimeMillis()))
                     .build();
