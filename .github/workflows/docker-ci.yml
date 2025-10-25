@@ -62,7 +62,7 @@ jobs:
     name: Publish Docker Image
     runs-on: ubuntu-latest
     needs: build
-      #if: github.event_name == 'push'
+    if: github.event_name == 'push'
       #    if: >
       #      github.event_name == 'push' && (
       #        github.ref == 'refs/heads/main' ||
@@ -103,7 +103,7 @@ jobs:
     name: Deploy to Z.com VPS
     runs-on: ubuntu-latest
     needs: publish
-      #if: github.event_name == 'push'
+    if: github.event_name == 'push'
       #if: github.ref == 'refs/heads/main'
 
     steps:
@@ -127,5 +127,5 @@ jobs:
             echo "Starting new container..."
             docker run -d --name portfolio-backend -p 8080:8080 hlyamhtet/portfolio-backend:latest
 
-            echo "Deployment complete! App available at http://18.140.211.96:8080"
+            echo "Deployment complete! App available at http://18.140.211.96:8081"
           EOF
