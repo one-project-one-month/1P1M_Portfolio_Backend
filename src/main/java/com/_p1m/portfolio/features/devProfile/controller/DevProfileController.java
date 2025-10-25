@@ -12,6 +12,7 @@ import com._p1m.portfolio.features.devProfile.dto.response.DevProfileListRespons
 import com._p1m.portfolio.features.devProfile.service.DevProfileService;
 import com._p1m.portfolio.features.opomRegister.dto.response.OpomRegisterResponse;
 import com._p1m.portfolio.features.projectPortfolio.dto.request.UpdateProjectPortfolioRequest;
+import com._p1m.portfolio.features.projectPortfolio.dto.request.UploadFileRequest;
 import com._p1m.portfolio.security.JWT.JWTUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,6 +31,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,6 +64,32 @@ public class DevProfileController {
         final ApiResponse response = devProfileService.createDevProfile(request, userId);
         return ResponseUtils.buildResponse(httpServletRequest, response);
     }
+
+    @Operation(
+            summary = "Upload a file (Dev Profile image)",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Multipart form with image file",
+                    required = true,
+                    content = @Content(
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                            schema = @Schema(implementation = UploadFileRequest.class)
+                    )
+            )
+    )
+    @PatchMapping(
+            value = "/uploadFile",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<ApiResponse> uploadFile(
+            @RequestParam("devProfileId") Long devProfileId,
+            @Parameter(hidden = true)
+            @ModelAttribute UploadFileRequest fileRequest,
+            HttpServletRequest request
+    ) {
+        ApiResponse response = this.devProfileService.uploadFile(fileRequest, devProfileId);
+        return ResponseUtils.buildResponse(request, response);
+    }
+
 
     @Operation(summary = "Get all developer profiles",
             description = "Fetches a list of all developer profiles.",

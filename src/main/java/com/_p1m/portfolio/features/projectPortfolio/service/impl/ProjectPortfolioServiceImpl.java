@@ -56,6 +56,16 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 	public ApiResponse createProjectPortfolio(CreateProjectPortfolioRequest createRequest, String token) {
 		String email = jwtUtil.extractEmail(token);
 		Set<DevProfile> devProfiles = new HashSet<>();
+
+        if (projectPortfolioRepository.existsByName(createRequest.name())) {
+            return ApiResponse.builder()
+                    .success(0)
+                    .code(HttpStatus.CONFLICT.value())
+                    .message("Project Portfolio Name Already Exists.")
+                    .data(Map.of("projectName", createRequest.name()))
+                    .meta(Map.of("timestamp", System.currentTimeMillis()))
+                    .build();
+        }
 		
         if (createRequest.developerEmails() != null) {
                     for (String devEmail : createRequest.developerEmails()) {

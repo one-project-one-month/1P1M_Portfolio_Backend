@@ -10,6 +10,7 @@ import com._p1m.portfolio.data.models.ProjectPortfolio;
 import com._p1m.portfolio.data.models.User;
 import com._p1m.portfolio.data.models.lookup.TechStack;
 import com._p1m.portfolio.data.repositories.UserRepository;
+import com._p1m.portfolio.data.storage.CloudStorageService;
 import com._p1m.portfolio.features.devProfile.dto.request.CreateDevProfileRequest;
 import com._p1m.portfolio.features.devProfile.dto.request.UpdateDevProfileRequest;
 import com._p1m.portfolio.features.devProfile.dto.response.DevProfileListResponse;
@@ -18,6 +19,7 @@ import com._p1m.portfolio.data.repositories.DevProfileRepository;
 import com._p1m.portfolio.data.repositories.TechStackRepository;
 import com._p1m.portfolio.features.devProfile.service.DevProfileService;
 import com._p1m.portfolio.features.opomRegister.dto.response.OpomRegisterResponse;
+import com._p1m.portfolio.features.projectPortfolio.dto.request.UploadFileRequest;
 import com._p1m.portfolio.security.JWT.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -39,6 +42,7 @@ public class DevProfileServiceImpl implements DevProfileService {
     private final UserRepository userRepository;
     private final DevProfileRepository devProfileRepository;
     private final TechStackRepository techStackRepository;
+    private final CloudStorageService cloudStorageService;
     private final JWTUtil jwtUtil;
 
     @Override
@@ -62,7 +66,6 @@ public class DevProfileServiceImpl implements DevProfileService {
         DevProfile devProfile = DevProfile.builder()
                 .user(user)
                 .name(request.getName())
-                .profilePictureUrl(request.getProfilePictureUrl())
                 .github(request.getGithub())
                 .linkedIn(request.getLinkedIn())
                 .aboutDev(request.getAboutDev())
@@ -142,7 +145,6 @@ public class DevProfileServiceImpl implements DevProfileService {
 
         // Update basic profile info
         devProfile.setName(updateRequest.getName());
-        devProfile.setProfilePictureUrl(updateRequest.getProfilePictureUrl());
         devProfile.setGithub(updateRequest.getGithub());
         devProfile.setLinkedIn(updateRequest.getLinkedIn());
         devProfile.setAboutDev(updateRequest.getAboutDev());
@@ -163,6 +165,21 @@ public class DevProfileServiceImpl implements DevProfileService {
                 .code(HttpStatus.OK.value())
                 .message("Developer profile updated successfully.")
                 .data(updatedProfile)
+                .build();
+    }
+
+    @Override
+    public ApiResponse uploadFile(UploadFileRequest fileRequest, Long devProfileId) {
+        String publicId = cloudStorageService.upload(fileRequest.file());
+        DevProfile devProfile = devProfileRepository.findById(devProfileId)
+                .orElseThrow(() -> new EntityNotFoundException("Dev Profile not found for id: " + devProfileId));
+        devProfile.setProfilePictureUrl(publicId);
+        devProfileRepository.save(devProfile);
+        return ApiResponse.builder()
+                .success(1)
+                .code(HttpStatus.OK.value())
+                .data(Map.of("imageUrl", publicId))
+                .message("File uploaded successfully.")
                 .build();
     }
 
