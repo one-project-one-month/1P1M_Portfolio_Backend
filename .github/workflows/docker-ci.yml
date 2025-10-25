@@ -127,5 +127,5 @@ jobs:
             echo "Starting new container..."
             docker run -d --name portfolio-backend -p 8080:8080 hlyamhtet/portfolio-backend:latest
 
-            echo "Deployment complete! App available at http://18.140.211.96:8080"
+            echo "Deployment complete! App available at http://18.140.211.96:8081"
           EOF
