@@ -91,15 +91,25 @@ jobs:
             sudo chown -R appuser:appuser /opt/myapp
 
             echo "Installing systemd services..."
-            sudo mv /tmp/javasimple.service /etc/systemd/system/javasimple.service
-            sudo mv /tmp/javaforking.service /etc/systemd/system/javaforking.service
-            sudo chmod 644 /etc/systemd/system/*.service
+            # Only move if the source file exists and is different
+            for svc in javasimple javaforking; do
+              if [ -f "/tmp/\${svc}.service" ]; then
+                echo "Installing \${svc}.service..."
+            # Remove old file first to avoid “same file” error
+                sudo rm -f /etc/systemd/system/\${svc}.service
+                sudo mv /tmp/\${svc}.service /etc/systemd/system/\${svc}.service
+                sudo chmod 644 /etc/systemd/system/\${svc}.service
+              fi
+            done
+            #            sudo mv /tmp/javasimple.service /etc/systemd/system/javasimple.service
+            #sudo mv /tmp/javaforking.service /etc/systemd/system/javaforking.service
+            #sudo chmod 644 /etc/systemd/system/*.service
 
 
             # ✅ NEW section: always refresh the service file and restart cleanly
-            echo "Refreshing javasimple.service..."
-            sudo cp /etc/systemd/system/javasimple.service /etc/systemd/system/javasimple.service
-            sudo cp /etc/systemd/system/javaforking.service /etc/systemd/system/javaforking.service
+            #echo "Refreshing javasimple.service..."
+            #sudo cp /etc/systemd/system/javasimple.service /etc/systemd/system/javasimple.service
+            #sudo cp /etc/systemd/system/javaforking.service /etc/systemd/system/javaforking.service
 
             sudo systemctl daemon-reload
             sudo systemctl enable --now javasimple.service
