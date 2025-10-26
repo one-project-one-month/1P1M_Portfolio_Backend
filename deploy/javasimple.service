@@ -6,13 +6,17 @@ After=network.target
 Type=simple
 User=appuser
 Group=appuser
-
-Environment="JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64"
 WorkingDirectory=/opt/myapp
-ExecStart=${JAVA_HOME}/bin/java -jar /opt/myapp/app.jar
+
+# Use full path — no ${} in systemd allowed!
+Environment=JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+ExecStart=/usr/lib/jvm/java-21-openjdk-amd64/bin/java -jar /opt/myapp/app.jar
+
 SuccessExitStatus=143
 Restart=on-failure
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
+
 
