@@ -6,14 +6,7 @@ import java.util.Set;
 import com._p1m.portfolio.data.models.common.Auditable;
 import com._p1m.portfolio.data.models.lookup.LanguageAndTools;
 
-import jakarta.persistence.Basic;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -50,6 +43,10 @@ public class ProjectPortfolio extends Auditable {
         inverseJoinColumns = @JoinColumn(name = "dev_profiles_id")
     )
     private Set<DevProfile> devProfiles = new HashSet<>();
+
+    @ManyToOne
+    @JoinColumn(name = "owner_id", referencedColumnName = "id")
+    private DevProfile owner;
     
     @ManyToMany
     @JoinTable(

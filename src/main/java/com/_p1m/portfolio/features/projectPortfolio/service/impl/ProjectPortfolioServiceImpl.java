@@ -66,7 +66,11 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
                     .meta(Map.of("timestamp", System.currentTimeMillis()))
                     .build();
         }
-		
+
+        DevProfile ownerDevProfile = devProfileRepository.findByUserEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("DevProfile not found for the owner: " + email));
+
+        // Get other developer contributors 26/10/2025
         if (createRequest.developerEmails() != null) {
                     for (String devEmail : createRequest.developerEmails()) {
 
@@ -78,6 +82,9 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
                         devProfiles.add(devProfile);
                     }
         }
+        //Include the owner as part of contributors 26/10/2025
+        devProfiles.add(ownerDevProfile);
+
 		List<String> languageAndTools = createRequest.languageAndTools();
 
 		Set<LanguageAndTools> savedLanguagesAndTools = new HashSet<>();
@@ -96,6 +103,7 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 				.repoLink(createRequest.repoLink())
 				.devProfiles(devProfiles)
 				.languageAndTools(savedLanguagesAndTools)
+                .owner(ownerDevProfile)
 				.build();
 
 		this.projectPortfolioRepository.save(projectPortfolio);

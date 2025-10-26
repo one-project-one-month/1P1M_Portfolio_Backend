@@ -3,16 +3,17 @@ package com._p1m.portfolio.features.users.service.serviceImpl;
 import com._p1m.portfolio.common.component.OtpStore;
 import com._p1m.portfolio.common.util.ServerUtil;
 import com._p1m.portfolio.config.beans.AdminEmailConfig;
+import com._p1m.portfolio.config.exceptions.EntityNotFoundException;
 import com._p1m.portfolio.config.response.dto.ApiResponse;
 import com._p1m.portfolio.data.enums.ROLE;
-import com._p1m.portfolio.data.models.DevProfile;
-import com._p1m.portfolio.data.models.OAuthUser;
-import com._p1m.portfolio.data.models.User;
-import com._p1m.portfolio.data.models.Role;
-import com._p1m.portfolio.data.repositories.DevProfileRepository;
-import com._p1m.portfolio.data.repositories.OAuthUserRepository;
-import com._p1m.portfolio.data.repositories.RoleRepository;
-import com._p1m.portfolio.data.repositories.UserRepository;
+import com._p1m.portfolio.data.models.*;
+import com._p1m.portfolio.data.models.lookup.ProjectType;
+import com._p1m.portfolio.data.repositories.*;
+import com._p1m.portfolio.features.devProfile.dto.response.DevProfileResponse;
+import com._p1m.portfolio.features.devProfile.service.serviceImpl.DevProfileServiceImpl;
+import com._p1m.portfolio.features.projectIdea.dto.response.ProjectIdeaResponse;
+import com._p1m.portfolio.features.projectPortfolio.dto.response.ProjectPortfolioResponse;
+import com._p1m.portfolio.features.projectPortfolio.dto.response.ProjectPortfolioResponseForProfileData;
 import com._p1m.portfolio.features.users.dto.request.*;
 import com._p1m.portfolio.features.users.dto.response.AuthResponse;
 import com._p1m.portfolio.features.users.service.AuthService;
@@ -37,13 +38,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import javax.swing.text.html.Option;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +52,9 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final DevProfileRepository devProfileRepository;
+    private final ProjectIdeaRepository projectIdeaRepository;
+    private final ProjectPortfolioRepository projectPortfolioRepository;
+    private final DevProfileServiceImpl devProfileServiceImpl;
     private final PasswordEncoder passwordEncoder;
     private final JWTUtil jwtUtil;
     private final GoogleOAuthService googleOAuthService;
@@ -382,5 +386,81 @@ public class UserServiceImpl implements UserService {
                     .build();
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ApiResponse getProfileData(Long userId, String token) {
+        String email = jwtUtil.extractEmail(token);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User Not found."));
+
+        DevProfile devProfile = devProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Dev Profile Not Found."));
+
+        ProjectIdea projectIdea = projectIdeaRepository.findByDevProfile_Id(devProfile.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Project Idea Not Found."));
+
+        List<ProjectPortfolio> projectPortfolios =
+                projectPortfolioRepository.findByDevProfiles_Id(devProfile.getId());
+
+        if (projectPortfolios.isEmpty()) {
+            throw new EntityNotFoundException("No Project Portfolios found.");
+        }
+
+        // Dev Profile
+        DevProfileResponse devProfileResponse = devProfileServiceImpl.mapToDevProfileResponse(devProfile);
+
+        // Project Idea
+        DevProfile currentUserDevProfile = devProfileRepository.findByUserEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Current Dev Profile Not Found."));
+        ProjectIdeaResponse projectIdeaResponse = ProjectIdeaResponse.builder()
+                .projectIdeaId(projectIdea.getId())
+                .projectIdeaName(projectIdea.getName())
+                .description(projectIdea.getDescription())
+                .status(projectIdea.getStatus())
+                .dev_id(projectIdea.getDevProfile().getId()) // Owner Id
+                .build();
+
+        // Reacted Project IDs for this user
+        Set<Long> reactedProjectPortfolioIds = user.getReactedProjectPortfolios()
+                .stream()
+                .map(ProjectPortfolio::getId)
+                .collect(Collectors.toSet());
+
+        // Project Portfolio List
+        List<ProjectPortfolioResponseForProfileData> projectPortfolioResponses = projectPortfolios.stream()
+                .map(p -> ProjectPortfolioResponseForProfileData.builder()
+                        .id(p.getId())
+                        .name(p.getName())
+                        .projectPicUrl(p.getProjectPicUrl())
+                        .repoLink(p.getRepoLink())
+                        .projectLink(p.getProjectLink())
+                        .description(p.getDescription())
+                        .reaction_count(
+                                p.getReactedUsers() != null ? p.getReactedUsers().size() : 0
+                        )
+                        .reactedProjectPortfolios(
+                                user.getReactedProjectPortfolios().stream() .map(ProjectPortfolio::getId) .toList()
+                        )
+                        .isOwner(
+                                p.getOwner() != null &&
+                                        p.getOwner().getId().equals(currentUserDevProfile.getId())
+                        )
+                        .build())
+                .toList();
+
+        return ApiResponse.builder()
+                .success(1)
+                .code(200)
+                .message("Profile data fetched successfully.")
+                .data(Map.of(
+                        "devProfile", devProfileResponse,
+                        "projectIdea", projectIdeaResponse,
+                        "projectPortfolios", projectPortfolioResponses
+                ))
+                .meta(Map.of("timestamp", System.currentTimeMillis()))
+                .build();
+    }
+
 }
 

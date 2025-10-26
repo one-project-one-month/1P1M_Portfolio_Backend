@@ -6,6 +6,7 @@ import com._p1m.portfolio.features.users.dto.request.*;
 import com._p1m.portfolio.features.users.service.PasswordResetService;
 import com._p1m.portfolio.features.users.service.UserService;
 
+import com._p1m.portfolio.security.JWT.JWTUtil;
 import com._p1m.portfolio.security.OAuth2.Github.dto.request.GithubOAuthRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,6 +30,7 @@ public class UserController {
 
     private final UserService userService;
     private final PasswordResetService passwordResetService;
+    private final JWTUtil jwtUtil;
 
     @Operation(
             summary = "Check Email Exists in the System or Not.",
@@ -268,6 +270,30 @@ public class UserController {
                                                      HttpServletRequest httpServletRequest) {
         final ApiResponse response = passwordResetService.resetPassword(request);
         return ResponseUtils.buildResponse(httpServletRequest, response);
+    }
+
+    @Operation(
+            summary = "Get Profile Data by User Id",
+            description = "Getting Profile Data by User Id",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true
+            ),
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "Profile Data fetch successfully.",
+                            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+                    )
+            }
+    )
+    @GetMapping("/getProfileData")
+    public ResponseEntity<ApiResponse> getProfileData(
+            @RequestParam("userId") Long userId,
+            HttpServletRequest request
+    ){
+        String token = jwtUtil.extractTokenFromRequest(request);
+        final ApiResponse response = this.userService.getProfileData(userId , token);
+        return ResponseUtils.buildResponse(request , response);
     }
 
 }

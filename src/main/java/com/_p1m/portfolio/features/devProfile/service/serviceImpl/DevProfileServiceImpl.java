@@ -184,12 +184,12 @@ public class DevProfileServiceImpl implements DevProfileService {
     }
 
 
-    private TechStack findOrCreateTechStack(String name) {
+    public TechStack findOrCreateTechStack(String name) {
         return techStackRepository.findByNameIgnoreCase(name)
                 .orElseGet(() -> techStackRepository.save(TechStack.builder().name(name).build()));
     }
 
-    private DevProfileResponse mapToDevProfileResponse(DevProfile profile) {
+    public DevProfileResponse mapToDevProfileResponse(DevProfile profile) {
         List<String> techStackNames = profile.getTechStacks().stream()
                 .map(TechStack::getName)
                 .collect(Collectors.toList());

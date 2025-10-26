@@ -12,8 +12,6 @@ import java.io.IOException;
 
 @Service
 public interface UserService {
-//    AuthResponse login(LoginRequest request);
-//    AuthResponse signup(SignupRequest request);
 
     ApiResponse googleOAuth2Service(@Valid GoogleOAuthRequest googleOAuthRequest);
 
@@ -33,7 +31,5 @@ public interface UserService {
 
     ApiResponse checkEmailExistOrNot(@Valid CheckEmailRequest checkEmailRequest);
 
-    //ApiResponse initiatePasswordReset(ForgotPasswordRequest request) throws IOException, MessagingException;
-
-    //ApiResponse resetPassword(ResetPasswordRequest request);
+    ApiResponse getProfileData(Long userId, String token);
 }

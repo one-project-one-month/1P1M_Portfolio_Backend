@@ -22,4 +22,7 @@ public interface ProjectIdeaRepository extends JpaRepository<ProjectIdea, Long>,
     Optional<ProjectIdea> findByName(@NotBlank(message = "Project Name is required.") String projectName);
 
     boolean existsByName(@NotBlank(message = "Project Name is required.") String projectName);
+
+    Optional<ProjectIdea> findByDevProfile_Id(Long devId);
+
 }
