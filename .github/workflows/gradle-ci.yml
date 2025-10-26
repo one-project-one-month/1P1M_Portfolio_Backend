@@ -74,6 +74,14 @@ jobs:
 
             echo "Deploying app..."
             sudo mkdir -p /opt/myapp
+
+            # 🧹 Clean up previous app.jar (file or folder)
+            if [ -d "/opt/myapp/app.jar" ]; then
+              sudo rm -rf /opt/myapp/app.jar
+            elif [ -f "/opt/myapp/app.jar" ]; then
+              sudo rm -f /opt/myapp/app.jar
+            fi
+
             sudo mv /tmp/app.jar /opt/myapp/app.jar
             sudo chmod 644 /opt/myapp/app.jar
 
