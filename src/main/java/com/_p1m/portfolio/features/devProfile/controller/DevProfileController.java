@@ -153,9 +153,7 @@ public class DevProfileController {
             HttpServletRequest request
     ) {
         String token = jwtUtil.extractTokenFromRequest(request);
-        ApiResponse response = this.devProfileService.updateDevProfile(updateRequest,id , token);
+        final ApiResponse response = this.devProfileService.updateDevProfile(updateRequest,id , token);
         return ResponseUtils.buildResponse(request, response);
     }
-
-
 }
