@@ -101,29 +101,21 @@ jobs:
                 sudo chmod 644 /etc/systemd/system/\${svc}.service
               fi
             done
-            #            sudo mv /tmp/javasimple.service /etc/systemd/system/javasimple.service
-            #sudo mv /tmp/javaforking.service /etc/systemd/system/javaforking.service
-            #sudo chmod 644 /etc/systemd/system/*.service
-
-
-            # ✅ NEW section: always refresh the service file and restart cleanly
-            #echo "Refreshing javasimple.service..."
-            #sudo cp /etc/systemd/system/javasimple.service /etc/systemd/system/javasimple.service
-            #sudo cp /etc/systemd/system/javaforking.service /etc/systemd/system/javaforking.service
-
+            
             sudo systemctl daemon-reload
-            sudo systemctl enable --now javasimple.service
-            sudo systemctl restart javasimple.service
 
-            sudo systemctl daemon-reload
-            sudo systemctl enable --now javaforking.service
-            sudo systemctl restart javaforking.service
+            echo "Restarting services..."
+            for svc in javasimple javaforking; do
+              echo "Restarting \${svc}..."
+              sudo systemctl stop \${svc} || true
+              sleep 2
+              sudo systemctl start \${svc} || {
+                echo "⚠️  Service \${svc} failed to start. Fetching logs..."
+                sudo systemctl status \${svc} --no-pager || true
+                sudo journalctl -xeu \${svc} --no-pager | tail -n 40 || true
+                exit 1
+              }
+            done
 
-            echo "Checking status..."
-            sudo systemctl status javasimple.service --no-pager || true
-            sudo journalctl -n 50 -u javasimple.service --no-pager || true
-                                    
-            echo "Checking status..."
-            sudo systemctl status javaforking.service --no-pager || true
-            sudo journalctl -n 50 -u javaforking.service --no-pager || true
+            echo "✅ Deployment completed successfully!"
           EOF
