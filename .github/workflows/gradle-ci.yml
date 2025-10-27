@@ -75,60 +75,57 @@ jobs:
             echo "Deploying app..."
             sudo mkdir -p /opt/myapp
 
-            # 🧹 Clean up previous app.jar (file or folder)
-            if [ -d "/opt/myapp/app.jar" ]; then
-              sudo rm -rf /opt/myapp/app.jar
-            elif [ -f "/opt/myapp/app.jar" ]; then
-              sudo rm -f /opt/myapp/app.jar
-            fi
+            echo "🧹 Removing old JAR..."
+            sudo rm -rf /opt/myapp/app.jar || true
 
+            echo "📦 Moving new JAR..."
             sudo mv /tmp/app.jar /opt/myapp/app.jar
             sudo chmod 644 /opt/myapp/app.jar
+
 
             if ! id -u appuser >/dev/null 2>&1; then
               sudo useradd -r -s /usr/sbin/nologin appuser
             fi
             sudo chown -R appuser:appuser /opt/myapp
 
-            echo "Installing systemd services..."
-            # Only move if the source file exists and is different
-            for svc in javasimple javaforking; do
-              if [ -f "/tmp/\${svc}.service" ]; then
-                echo "Installing \${svc}.service..."
-            # Remove old file first to avoid “same file” error
-                sudo rm -f /etc/systemd/system/\${svc}.service
-                sudo mv /tmp/\${svc}.service /etc/systemd/system/\${svc}.service
-                sudo chmod 644 /etc/systemd/system/\${svc}.service
-              fi
-            done
-
-            echo "Creating start-wrapper.sh..."
-            cat <<'SCRIPT' | sudo tee /opt/myapp/start-wrapper.sh > /dev/null
+            echo "🧾 Creating start-wrapper.sh..."
+            sudo bash -c 'cat > /opt/myapp/start-wrapper.sh << "SCRIPT"
 #!/bin/bash
-## Simple wrapper to start the Java Gradle app (Forking Service)
+# Simple wrapper to start the Java Gradle app (Forking Service)
+
 JAR_PATH="/opt/myapp/app.jar"
 LOG_FILE="/opt/myapp/app.log"
+PID_FILE="/opt/myapp/app.pid"
 
-# Run in background and fork
+# Run in background (fork)
 nohup java -jar "$JAR_PATH" > "$LOG_FILE" 2>&1 &
-echo $! > /opt/myapp/app.pid
-SCRIPT
+echo $! > "$PID_FILE"
+
+exit 0
+SCRIPT'
 
             sudo chmod +x /opt/myapp/start-wrapper.sh
             sudo chown appuser:appuser /opt/myapp/start-wrapper.sh
 
-            
+            echo "Installing systemd services..."
+            for svc in javasimple javaforking; do
+              if [ -f "/tmp/${svc}.service" ]; then
+                sudo mv /tmp/${svc}.service /etc/systemd/system/${svc}.service
+                sudo chmod 644 /etc/systemd/system/${svc}.service
+              fi
+            done
+
             sudo systemctl daemon-reload
 
             echo "Restarting services..."
             for svc in javasimple javaforking; do
               echo "Restarting \${svc}..."
-              sudo systemctl stop \${svc} || true
+              sudo systemctl stop ${svc} || true
               sleep 2
-              sudo systemctl start \${svc} || {
-                echo "⚠️  Service \${svc} failed to start. Fetching logs..."
-                sudo systemctl status \${svc} --no-pager || true
-                sudo journalctl -xeu \${svc} --no-pager | tail -n 40 || true
+              sudo systemctl start ${svc} || {
+                echo "⚠️  Service ${svc} failed to start. Fetching logs..."
+                sudo systemctl status ${svc} --no-pager || true
+                sudo journalctl -xeu ${svc} --no-pager | tail -n 40 || true
                 exit 1
               }
             done
