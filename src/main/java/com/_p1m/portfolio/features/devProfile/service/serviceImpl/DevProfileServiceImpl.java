@@ -98,7 +98,7 @@ public class DevProfileServiceImpl implements DevProfileService {
         Page<DevProfile> devProfileResponse = this.devProfileRepository.findAll(spec, pageable);
         List<DevProfileListResponse> devProfileListResponses = devProfileResponse.getContent().stream()
                 .map(devProfile -> DevProfileListResponse.builder()
-                        .userId(devProfile.getId())
+                        .dev_id(devProfile.getId())
                         .email(devProfile.getUser().getEmail())
                         .name(devProfile.getName())
                         .aboutDev(devProfile.getAboutDev())

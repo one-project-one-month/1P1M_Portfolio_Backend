@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 @Builder
 public class DevProfileListResponse {
-    private Long userId;
+    private Long dev_id;
     private String email;
     private String name;
     private String profilePictureUrl;
