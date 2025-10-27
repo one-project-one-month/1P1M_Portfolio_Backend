@@ -1,0 +1,129 @@
+
+name: Java CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - dev
+      - ft*
+  pull_request:
+    branches:
+      - main
+      - staging
+      - dev
+      - ft*
+
+jobs:
+  build:
+    name: Build Gradle Project
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Build project with Gradle
+        run: ./gradlew build -x test --no-daemon
+
+      - name: Upload built JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-app-jar
+          path: build/libs/*.jar
+
+  deploy:
+    name: Deploy to Z.com VPS
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout repo (to get service files)
+        uses: actions/checkout@v4
+
+      - name: Download built JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: gradle-app-jar
+          path: build/libs/
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/pemkey.pem
+          chmod 600 ~/.ssh/pemkey.pem
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Copy files to server and deploy
+        run: |
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/pemkey.pem ./build/libs/*.jar ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/app.jar
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/pemkey.pem ./deploy/javasimple.service ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/javasimple.service
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/pemkey.pem ./deploy/javaforking.service ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/javaforking.service
+
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/pemkey.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            set -e
+            sudo apt update -y
+            sudo apt install -y openjdk-21-jdk
+
+            echo "Deploying app..."
+            sudo mkdir -p /opt/myapp
+
+            # 🧹 Clean up previous app.jar (file or folder)
+            if [ -d "/opt/myapp/app.jar" ]; then
+              sudo rm -rf /opt/myapp/app.jar
+            elif [ -f "/opt/myapp/app.jar" ]; then
+              sudo rm -f /opt/myapp/app.jar
+            fi
+
+            sudo mv /tmp/app.jar /opt/myapp/app.jar
+            sudo chmod 644 /opt/myapp/app.jar
+
+            if ! id -u appuser >/dev/null 2>&1; then
+              sudo useradd -r -s /usr/sbin/nologin appuser
+            fi
+            sudo chown -R appuser:appuser /opt/myapp
+
+            echo "Installing systemd services..."
+            # Only move if the source file exists and is different
+            for svc in javasimple javaforking; do
+              if [ -f "/tmp/\${svc}.service" ]; then
+                echo "Installing \${svc}.service..."
+            # Remove old file first to avoid “same file” error
+                sudo rm -f /etc/systemd/system/\${svc}.service
+                sudo mv /tmp/\${svc}.service /etc/systemd/system/\${svc}.service
+                sudo chmod 644 /etc/systemd/system/\${svc}.service
+              fi
+            done
+            #            sudo mv /tmp/javasimple.service /etc/systemd/system/javasimple.service
+            #sudo mv /tmp/javaforking.service /etc/systemd/system/javaforking.service
+            #sudo chmod 644 /etc/systemd/system/*.service
+
+
+            # ✅ NEW section: always refresh the service file and restart cleanly
+            #echo "Refreshing javasimple.service..."
+            #sudo cp /etc/systemd/system/javasimple.service /etc/systemd/system/javasimple.service
+            #sudo cp /etc/systemd/system/javaforking.service /etc/systemd/system/javaforking.service
+
+            sudo systemctl daemon-reload
+            sudo systemctl enable --now javasimple.service
+            sudo systemctl restart javasimple.service
+
+            sudo systemctl daemon-reload
+            sudo systemctl enable --now javaforking.service
+            sudo systemctl restart javaforking.service
+
+            echo "Checking status..."
+            sudo systemctl status javasimple.service --no-pager || true
+            sudo journalctl -n 50 -u javasimple.service --no-pager || true
+                                    
+            echo "Checking status..."
+            sudo systemctl status javaforking.service --no-pager || true
+            sudo journalctl -n 50 -u javaforking.service --no-pager || true
+          EOF

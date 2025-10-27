@@ -33,6 +33,7 @@ public class ApprovedIdeaServiceImpl implements ApprovedIdeaService {
     private final JWTUtil jwtUtil;
 
     @Override
+    @Transactional(readOnly = true)
     public PaginatedApiResponse<ApprovedIdeaResponse> listApprovedIdeas(String sortBy, Pageable pageable) {
 
         Page<ProjectIdea> ideaPage;
