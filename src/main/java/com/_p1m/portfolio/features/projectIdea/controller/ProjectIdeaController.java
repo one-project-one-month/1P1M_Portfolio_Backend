@@ -71,7 +71,8 @@ public class ProjectIdeaController {
 
     @Operation(
             summary = "Update Project Idea Status",
-            description = "Update Project Idea Status",
+            description = "Update Project Idea Status " +
+                    "1 = Approve , 0 = Reject , 2 = In Progress , 3 = COMPLETED , 4 = DELETED",
             parameters = {
                     @Parameter(
                             name = "projectIdeaId",

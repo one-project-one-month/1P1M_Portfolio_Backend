@@ -58,14 +58,16 @@ public class ApprovedIdeaController {
 
             HttpServletRequest request) {
 
+        String token = jwtUtil.extractTokenFromRequest(request);
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        PaginatedApiResponse<ApprovedIdeaResponse> response = approvedIdeaService.listApprovedIdeas(sortBy, pageable);
+        final PaginatedApiResponse<ApprovedIdeaResponse> response = approvedIdeaService.listApprovedIdeas(sortBy, pageable, token);
         return ResponseUtils.buildPaginatedResponse(request, response);
     }
 
     @Operation(
             summary = "Update an approved project idea (Admin only)",
-            description = "Allows an admin to update the details of an existing approved project idea.",
+            description = "Allows an admin to update the details of an existing approved project idea. " +
+                    "1 = Approve , 0 = Reject , 2 = In Progress , 3 = COMPLETED , 4 = DELETED",
             security = @SecurityRequirement(name = "Bearer Authentication"),
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
@@ -76,7 +78,8 @@ public class ApprovedIdeaController {
                                     value = """
                         {
                           "name": "Updated Idea Name",
-                          "description": "This is an updated description."
+                          "description": "This is an updated description.",
+                          "status":1
                         }
                         """
                             )
@@ -95,7 +98,7 @@ public class ApprovedIdeaController {
             HttpServletRequest request) {
 
         String token = jwtUtil.extractTokenFromRequest(request);
-        ApiResponse response = approvedIdeaService.updateApprovedIdea(ideaId, updateRequest, token);
+        final ApiResponse response = approvedIdeaService.updateApprovedIdea(ideaId, updateRequest, token);
         return ResponseUtils.buildResponse(request, response);
     }
 
@@ -115,7 +118,7 @@ public class ApprovedIdeaController {
             HttpServletRequest request) {
 
         String token = jwtUtil.extractTokenFromRequest(request);
-        ApiResponse response = approvedIdeaService.deleteApprovedIdea(ideaId, token);
+        final ApiResponse response = approvedIdeaService.deleteApprovedIdea(ideaId, token);
         return ResponseUtils.buildResponse(request, response);
     }
 }

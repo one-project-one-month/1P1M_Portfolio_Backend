@@ -107,9 +107,25 @@ public class ProjectIdeaServiceImpl implements ProjectIdeaService {
         ProjectIdea projectIdea = projectIdeaRepository.findById(projectIdeaId)
                 .orElseThrow(() -> new com._p1m.portfolio.config.exceptions.EntityNotFoundException("Project Idea Does not Exist."));
 
-        projectIdea.setApproveStatus(status == 1);
-        projectIdea.setStatus(projectIdea.isApproveStatus() ? ProjectIdeaStatus.APPROVED : ProjectIdeaStatus.REJECTED);
-        projectIdeaRepository.save(projectIdea);
+        if (status != null) {
+            ProjectIdeaStatus newStatus = switch (status.intValue()) {
+                case 0 -> ProjectIdeaStatus.REJECTED;
+                case 1 -> ProjectIdeaStatus.APPROVED;
+                case 2 -> ProjectIdeaStatus.IN_PROGRESS;
+                case 3 -> ProjectIdeaStatus.COMPLETED;
+                case 4 -> ProjectIdeaStatus.DELETED;
+                default -> throw new IllegalArgumentException("Invalid status code: " + status);
+            };
+
+            projectIdea.setStatus(newStatus);
+
+            if (newStatus == ProjectIdeaStatus.APPROVED) {
+                projectIdea.setApproveStatus(true);
+            } else if (newStatus == ProjectIdeaStatus.REJECTED) {
+                projectIdea.setApproveStatus(false);
+            }
+            projectIdeaRepository.save(projectIdea);
+        }
 
         return ApiResponse.builder()
                 .success(1)
@@ -122,6 +138,7 @@ public class ProjectIdeaServiceImpl implements ProjectIdeaService {
                 .meta(Map.of("timestamp", System.currentTimeMillis()))
                 .build();
     }
+
 
     @Override
     @Transactional(readOnly = true)

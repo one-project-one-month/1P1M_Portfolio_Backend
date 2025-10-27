@@ -8,7 +8,7 @@ import com._p1m.portfolio.features.approvedProjectIdeas.dto.request.UpdateApprov
 import com._p1m.portfolio.features.approvedProjectIdeas.dto.response.ApprovedIdeaResponse;
 
 public interface ApprovedIdeaService {
-    PaginatedApiResponse<ApprovedIdeaResponse> listApprovedIdeas(String sortBy, Pageable pageable);
+    PaginatedApiResponse<ApprovedIdeaResponse> listApprovedIdeas(String sortBy, Pageable pageable , String token);
     ApiResponse updateApprovedIdea(Long ideaId, UpdateApprovedIdeaRequest request, String token);
     ApiResponse deleteApprovedIdea(Long ideaId, String token);
 }
