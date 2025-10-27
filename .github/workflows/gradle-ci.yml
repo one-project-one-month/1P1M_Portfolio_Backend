@@ -104,15 +104,17 @@ jobs:
 
             echo "Creating start-wrapper.sh..."
             cat <<'SCRIPT' | sudo tee /opt/myapp/start-wrapper.sh > /dev/null
-#!/bin/bash
-## Simple wrapper to start the Java Gradle app (Forking Service)
-JAR_PATH="/opt/myapp/app.jar"
-LOG_FILE="/opt/myapp/app.log"
+            ##!/bin/bash
+            ### Simple wrapper to start the Java Gradle app (Forking Service)
+            #JAR_PATH="/opt/myapp/app.jar"
+            #LOG_FILE="/opt/myapp/app.log"
+            #
+            ## Run in background and fork
+            #nohup java -jar "$JAR_PATH" > "$LOG_FILE" 2>&1 &
+            #echo $! > /opt/myapp/app.pid
+            #SCRIPT
 
-# Run in background and fork
-nohup java -jar "$JAR_PATH" > "$LOG_FILE" 2>&1 &
-echo $! > /opt/myapp/app.pid
-SCRIPT
+            echo 'IyEvYmluL2Jhc2gKSkFSX1BBVEg9Ii9vcHQvbXlhcHAvYXBwLmphciIKTE9HX0ZJTEU9Ii9vcHQvbXlhcHAvYXBwLmxvZyIKCiMgUnVuIGluIGJhY2tncm91bmQgYW5kIGZvcmsKbm9odXAgamF2YSAtamFyICIkSkFSX1BBVEgiID4gIiRM T0dfRklMRSIgMj4mMSAmCmVjaG8gJCEgPiAvb3B0L215YXBwL2FwcC5waWQK' | base64 -d | sudo tee /opt/myapp/start-wrapper.sh >/dev/null
 
             sudo chmod +x /opt/myapp/start-wrapper.sh
             sudo chown appuser:appuser /opt/myapp/start-wrapper.sh
