@@ -67,7 +67,7 @@ jobs:
           scp -o StrictHostKeyChecking=no -i ~/.ssh/pemkey.pem ./deploy/javasimple.service ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/javasimple.service
           scp -o StrictHostKeyChecking=no -i ~/.ssh/pemkey.pem ./deploy/javaforking.service ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/javaforking.service
 
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/pemkey.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/pemkey.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
             set -e
             sudo apt update -y
             sudo apt install -y openjdk-21-jdk
@@ -101,6 +101,22 @@ jobs:
                 sudo chmod 644 /etc/systemd/system/\${svc}.service
               fi
             done
+
+            echo "Creating start-wrapper.sh..."
+            cat <<'SCRIPT' | sudo tee /opt/myapp/start-wrapper.sh > /dev/null
+#!/bin/bash
+## Simple wrapper to start the Java Gradle app (Forking Service)
+JAR_PATH="/opt/myapp/app.jar"
+LOG_FILE="/opt/myapp/app.log"
+
+# Run in background and fork
+nohup java -jar "$JAR_PATH" > "$LOG_FILE" 2>&1 &
+echo $! > /opt/myapp/app.pid
+SCRIPT
+
+            sudo chmod +x /opt/myapp/start-wrapper.sh
+            sudo chown appuser:appuser /opt/myapp/start-wrapper.sh
+
             
             sudo systemctl daemon-reload
 
