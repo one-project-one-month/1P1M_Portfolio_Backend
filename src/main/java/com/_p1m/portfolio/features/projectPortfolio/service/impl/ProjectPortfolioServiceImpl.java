@@ -33,6 +33,7 @@ import com._p1m.portfolio.features.projectPortfolio.dto.request.DeleteProjectPor
 import com._p1m.portfolio.features.projectPortfolio.dto.request.UpdateProjectPortfolioRequest;
 import com._p1m.portfolio.features.projectPortfolio.dto.request.UploadFileRequest;
 import com._p1m.portfolio.features.projectPortfolio.dto.response.AssignedDevs;
+import com._p1m.portfolio.features.projectPortfolio.dto.response.AssignedDevs.DevProfileResponse;
 import com._p1m.portfolio.features.projectPortfolio.dto.response.ProjectPortfolioDetails;
 import com._p1m.portfolio.features.projectPortfolio.dto.response.ProjectPortfolioResponse;
 import com._p1m.portfolio.features.projectPortfolio.service.ProjectPortfolioService;
@@ -136,6 +137,7 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ApiResponse retrieveSpecificProjectPortfolio(Long projectPortfolioId) {
 		ProjectPortfolio projectPortfolio = projectPortfolioRepository.findById(projectPortfolioId)
 				.orElseThrow(() -> new EntityNotFoundException("Project portfolio not found for id: " + projectPortfolioId));
@@ -147,11 +149,21 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 				.description(projectPortfolio.getDescription())
 				.projectLink(projectPortfolio.getProjectLink())
 				.repoLink(projectPortfolio.getRepoLink())
-				.assignedDevs(new AssignedDevs(
-						projectPortfolio.getDevProfiles().stream()
-								.map(DevProfile::getId)
-								.collect(Collectors.toList())
-				))
+				.assignedDevs(
+					    new AssignedDevs(
+					        projectPortfolio.getDevProfiles()
+					            .stream()
+					            .map(dev -> new AssignedDevs.DevProfileResponse(
+					                dev.getId(),
+					                dev.getName(),
+					                dev.getProfilePictureUrl(),
+					                dev.getGithub(),
+					                dev.getLinkedIn(),
+					                dev.getAboutDev()
+					            ))
+					            .collect(Collectors.toList())
+					    )
+					)
 				.projectPortfolioDetails(new ProjectPortfolioDetails(
 						projectPortfolio.getLanguageAndTools().stream()
 								.map(LanguageAndTools::getName)
@@ -204,9 +216,24 @@ public class ProjectPortfolioServiceImpl implements ProjectPortfolioService {
 						.reaction_count(project.getReactedUsers() != null
                                 ? project.getReactedUsers().size()
                                 : 0)
-						.assignedDevs(new AssignedDevs(
-								project.getDevProfiles().stream()
-										.map(DevProfile::getId)
+						.assignedDevs(
+							    new AssignedDevs(
+							        project.getDevProfiles()
+							            .stream()
+							            .map(dev -> new AssignedDevs.DevProfileResponse(
+							                dev.getId(),
+							                dev.getName(),
+							                dev.getProfilePictureUrl(),
+							                dev.getGithub(),
+							                dev.getLinkedIn(),
+							                dev.getAboutDev()
+							            ))
+							            .collect(Collectors.toList())
+							    )
+							)
+						.projectPortfolioDetails(new ProjectPortfolioDetails(
+								project.getLanguageAndTools().stream()
+										.map(LanguageAndTools::getName)
 										.collect(Collectors.toList())
 						))
 						.projectPortfolioDetails(new ProjectPortfolioDetails(

@@ -67,7 +67,7 @@ jobs:
           scp -o StrictHostKeyChecking=no -i ~/.ssh/pemkey.pem ./deploy/javasimple.service ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/javasimple.service
           scp -o StrictHostKeyChecking=no -i ~/.ssh/pemkey.pem ./deploy/javaforking.service ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/javaforking.service
 
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/pemkey.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/pemkey.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
             set -e
             sudo apt update -y
             sudo apt install -y openjdk-21-jdk
@@ -75,55 +75,60 @@ jobs:
             echo "Deploying app..."
             sudo mkdir -p /opt/myapp
 
-            # 🧹 Clean up previous app.jar (file or folder)
-            if [ -d "/opt/myapp/app.jar" ]; then
-              sudo rm -rf /opt/myapp/app.jar
-            elif [ -f "/opt/myapp/app.jar" ]; then
-              sudo rm -f /opt/myapp/app.jar
-            fi
+            echo "🧹 Removing old JAR..."
+            sudo rm -rf /opt/myapp/app.jar || true
 
+            echo "📦 Moving new JAR..."
             sudo mv /tmp/app.jar /opt/myapp/app.jar
             sudo chmod 644 /opt/myapp/app.jar
+
 
             if ! id -u appuser >/dev/null 2>&1; then
               sudo useradd -r -s /usr/sbin/nologin appuser
             fi
             sudo chown -R appuser:appuser /opt/myapp
 
+            echo "🧾 Creating start-wrapper.sh..."
+            sudo bash -c 'cat > /opt/myapp/start-wrapper.sh << "SCRIPT"
+#!/bin/bash
+# Simple wrapper to start the Java Gradle app (Forking Service)
+
+JAR_PATH="/opt/myapp/app.jar"
+LOG_FILE="/opt/myapp/app.log"
+PID_FILE="/opt/myapp/app.pid"
+
+# Run in background (fork)
+nohup java -jar "$JAR_PATH" > "$LOG_FILE" 2>&1 &
+echo $! > "$PID_FILE"
+
+exit 0
+SCRIPT'
+
+            sudo chmod +x /opt/myapp/start-wrapper.sh
+            sudo chown appuser:appuser /opt/myapp/start-wrapper.sh
+
             echo "Installing systemd services..."
-            # Only move if the source file exists and is different
             for svc in javasimple javaforking; do
-              if [ -f "/tmp/\${svc}.service" ]; then
-                echo "Installing \${svc}.service..."
-            # Remove old file first to avoid “same file” error
-                sudo rm -f /etc/systemd/system/\${svc}.service
-                sudo mv /tmp/\${svc}.service /etc/systemd/system/\${svc}.service
-                sudo chmod 644 /etc/systemd/system/\${svc}.service
+              if [ -f "/tmp/${svc}.service" ]; then
+                sudo mv /tmp/${svc}.service /etc/systemd/system/${svc}.service
+                sudo chmod 644 /etc/systemd/system/${svc}.service
               fi
             done
-            #            sudo mv /tmp/javasimple.service /etc/systemd/system/javasimple.service
-            #sudo mv /tmp/javaforking.service /etc/systemd/system/javaforking.service
-            #sudo chmod 644 /etc/systemd/system/*.service
-
-
-            # ✅ NEW section: always refresh the service file and restart cleanly
-            #echo "Refreshing javasimple.service..."
-            #sudo cp /etc/systemd/system/javasimple.service /etc/systemd/system/javasimple.service
-            #sudo cp /etc/systemd/system/javaforking.service /etc/systemd/system/javaforking.service
 
             sudo systemctl daemon-reload
-            sudo systemctl enable --now javasimple.service
-            sudo systemctl restart javasimple.service
 
-            sudo systemctl daemon-reload
-            sudo systemctl enable --now javaforking.service
-            sudo systemctl restart javaforking.service
+            echo "Restarting services..."
+            for svc in javasimple javaforking; do
+              echo "Restarting \${svc}..."
+              sudo systemctl stop ${svc} || true
+              sleep 2
+              sudo systemctl start ${svc} || {
+                echo "⚠️  Service ${svc} failed to start. Fetching logs..."
+                sudo systemctl status ${svc} --no-pager || true
+                sudo journalctl -xeu ${svc} --no-pager | tail -n 40 || true
+                exit 1
+              }
+            done
 
-            echo "Checking status..."
-            sudo systemctl status javasimple.service --no-pager || true
-            sudo journalctl -n 50 -u javasimple.service --no-pager || true
-                                    
-            echo "Checking status..."
-            sudo systemctl status javaforking.service --no-pager || true
-            sudo journalctl -n 50 -u javaforking.service --no-pager || true
+            echo "✅ Deployment completed successfully!"
           EOF
