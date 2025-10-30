@@ -1,134 +1,51 @@
 
-name: Java CI/CD Pipeline
+
+name: Java Gradle CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
-      - staging
-      - dev
-      - ft*
-  pull_request:
-    branches:
-      - main
-      - staging
-      - dev
-      - ft*
+    branches: ["main"]
 
 jobs:
-  build:
-    name: Build Gradle Project
+  build-deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      # Step 2: Setup Java (same version as your Dockerfile)
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 21
+          distribution: 'temurin'
+          java-version: '21'
 
-      - name: Build project with Gradle
-        run: ./gradlew build -x test --no-daemon
+      # Step 3: Grant permission to Gradle wrapper
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x gradlew
 
-      - name: Upload built JAR
-        uses: actions/upload-artifact@v4
-        with:
-          name: gradle-app-jar
-          path: build/libs/*.jar
+      # Step 4: Build project (skip tests to speed up)
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test --no-daemon
 
-  deploy:
-    name: Deploy to Z.com VPS
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Checkout repo (to get service files)
-        uses: actions/checkout@v4
-
-      - name: Download built JAR
-        uses: actions/download-artifact@v4
-        with:
-          name: gradle-app-jar
-          path: build/libs/
-
-      - name: Set up SSH key
+      # Step 5: Copy JAR to EC2 and Deploy
+      - name: Copy JAR to EC2 and Deploy
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}                             # your EC2 public IP
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/pemkey.pem
-          chmod 600 ~/.ssh/pemkey.pem
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          echo "$SSH_PRIVATE_KEY" > key.pem
+          chmod 600 key.pem
 
-      - name: Copy files to server and deploy
-        run: |
-          scp -o StrictHostKeyChecking=no -i ~/.ssh/pemkey.pem ./build/libs/*.jar ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/app.jar
-          scp -o StrictHostKeyChecking=no -i ~/.ssh/pemkey.pem ./deploy/javasimple.service ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/javasimple.service
-          scp -o StrictHostKeyChecking=no -i ~/.ssh/pemkey.pem ./deploy/javaforking.service ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/javaforking.service
+          echo "Uploading JAR to EC2..."
+          scp -o StrictHostKeyChecking=no -i key.pem build/libs/*.jar $SSH_USER@$SSH_HOST:/tmp/app.jar
 
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/pemkey.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
-            set -e
-            sudo apt update -y
-            sudo apt install -y openjdk-21-jdk
-
-            echo "Deploying app..."
-            sudo mkdir -p /opt/myapp
-
-            echo "🧹 Removing old JAR..."
-            sudo rm -rf /opt/myapp/app.jar || true
-
-            echo "📦 Moving new JAR..."
-            sudo mv /tmp/app.jar /opt/myapp/app.jar
-            sudo chmod 644 /opt/myapp/app.jar
-
-
-            if ! id -u appuser >/dev/null 2>&1; then
-              sudo useradd -r -s /usr/sbin/nologin appuser
-            fi
-            sudo chown -R appuser:appuser /opt/myapp
-
-            echo "🧾 Creating start-wrapper.sh..."
-            sudo bash -c 'cat > /opt/myapp/start-wrapper.sh << "SCRIPT"
-#!/bin/bash
-# Simple wrapper to start the Java Gradle app (Forking Service)
-
-JAR_PATH="/opt/myapp/app.jar"
-LOG_FILE="/opt/myapp/app.log"
-PID_FILE="/opt/myapp/app.pid"
-
-# Run in background (fork)
-nohup java -jar "$JAR_PATH" > "$LOG_FILE" 2>&1 &
-echo $! > "$PID_FILE"
-
-exit 0
-SCRIPT'
-
-            sudo chmod +x /opt/myapp/start-wrapper.sh
-            sudo chown appuser:appuser /opt/myapp/start-wrapper.sh
-
-            echo "Installing systemd services..."
-            for svc in javasimple javaforking; do
-              if [ -f "/tmp/${svc}.service" ]; then
-                sudo mv /tmp/${svc}.service /etc/systemd/system/${svc}.service
-                sudo chmod 644 /etc/systemd/system/${svc}.service
-              fi
-            done
-
-            sudo systemctl daemon-reload
-
-            echo "Restarting services..."
-            for svc in javasimple javaforking; do
-              echo "Restarting \${svc}..."
-              sudo systemctl stop ${svc} || true
-              sleep 2
-              sudo systemctl start ${svc} || {
-                echo "⚠️  Service ${svc} failed to start. Fetching logs..."
-                sudo systemctl status ${svc} --no-pager || true
-                sudo journalctl -xeu ${svc} --no-pager | tail -n 40 || true
-                exit 1
-              }
-            done
-
-            echo "✅ Deployment completed successfully!"
+          echo "Restarting Java application..."
+          ssh -o StrictHostKeyChecking=no -i key.pem $SSH_USER@$SSH_HOST << 'EOF'
+            pkill -f 'java -jar' || true
+            nohup java -jar /tmp/app.jar > /tmp/app.log 2>&1 &
+            echo "✅ Application restarted successfully!"
           EOF
