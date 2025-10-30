@@ -4,7 +4,11 @@ name: Java Gradle CI/CD Pipeline
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
+      - staging
+      - dev
+      - ft*
 
 jobs:
   build-deploy:
