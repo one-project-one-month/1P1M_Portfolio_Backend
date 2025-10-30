@@ -1,35 +1,35 @@
-name: Build Gradle App
-
-on:
-  workflow_call:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set Up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'corretto'
-          java-version: '21'
-
-      - name: Cache Gradle Dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            gradle-
-
-      - name: Grant execute permission for Gradle Wrapper
-        run: chmod +x ./gradlew
-
-      - name: Build with Gradle (skip tests)
-        run: ./gradlew build -x test --no-daemon
+#name: Build Gradle App
+#
+#on:
+#  workflow_call:
+#
+#jobs:
+#  build:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#
+#      - name: Set Up Java
+#        uses: actions/setup-java@v4
+#        with:
+#          distribution: 'corretto'
+#          java-version: '21'
+#
+#      - name: Cache Gradle Dependencies
+#        uses: actions/cache@v4
+#        with:
+#          path: |
+#            ~/.gradle/caches
+#            ~/.gradle/wrapper
+#          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+#          restore-keys: |
+#            gradle-
+#
+#      - name: Grant execute permission for Gradle Wrapper
+#        run: chmod +x ./gradlew
+#
+#      - name: Build with Gradle (skip tests)
+#        run: ./gradlew build -x test --no-daemon
 
