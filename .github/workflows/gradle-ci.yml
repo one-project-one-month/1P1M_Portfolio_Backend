@@ -1,55 +1,55 @@
 
 
-name: Java Gradle CI/CD Pipeline
-
-on:
-  push:
-    branches:
-      - main
-      - staging
-      - dev
-      - ft*
-
-jobs:
-  build-deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      # Step 1: Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # Step 2: Setup Java (same version as your Dockerfile)
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      # Step 3: Grant permission to Gradle wrapper
-      - name: Grant execute permission for Gradle wrapper
-        run: chmod +x gradlew
-
-      # Step 4: Build project (skip tests to speed up)
-      - name: Build with Gradle
-        run: ./gradlew clean build -x test --no-daemon
-
-      # Step 5: Copy JAR to EC2 and Deploy
-      - name: Copy JAR to EC2 and Deploy
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}                             # your EC2 public IP
-        run: |
-          echo "$SSH_PRIVATE_KEY" > key.pem
-          chmod 600 key.pem
-
-          echo "Uploading JAR to EC2..."
-          scp -o StrictHostKeyChecking=no -i key.pem build/libs/*.jar $SSH_USER@$SSH_HOST:/tmp/app.jar
-
-          echo "Restarting Java application..."
-          ssh -o StrictHostKeyChecking=no -i key.pem $SSH_USER@$SSH_HOST << 'EOF'
-            pkill -f 'java -jar' || true
-            nohup java -jar /tmp/app.jar > /tmp/app.log 2>&1 &
-            echo "✅ Application restarted successfully!"
-          EOF
+#name: Java Gradle CI/CD Pipeline
+#
+#on:
+#  push:
+#    branches:
+#      - main
+#      - staging
+#      - dev
+#      - ft*
+#
+#jobs:
+#  build-deploy:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      # Step 1: Checkout code
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#
+#      # Step 2: Setup Java (same version as your Dockerfile)
+#      - name: Setup Java
+#        uses: actions/setup-java@v4
+#        with:
+#          distribution: 'temurin'
+#          java-version: '21'
+#
+#      # Step 3: Grant permission to Gradle wrapper
+#      - name: Grant execute permission for Gradle wrapper
+#        run: chmod +x gradlew
+#
+#      # Step 4: Build project (skip tests to speed up)
+#      - name: Build with Gradle
+#        run: ./gradlew clean build -x test --no-daemon
+#
+#      # Step 5: Copy JAR to EC2 and Deploy
+#      - name: Copy JAR to EC2 and Deploy
+#        env:
+#          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  
+#          SSH_USER: ${{ secrets.SSH_USER }}
+#          SSH_HOST: ${{ secrets.SSH_HOST }}                             # your EC2 public IP
+#        run: |
+#          echo "$SSH_PRIVATE_KEY" > key.pem
+#          chmod 600 key.pem
+#
+#          echo "Uploading JAR to EC2..."
+#          scp -o StrictHostKeyChecking=no -i key.pem build/libs/*.jar $SSH_USER@$SSH_HOST:/tmp/app.jar
+#
+#          echo "Restarting Java application..."
+#          ssh -o StrictHostKeyChecking=no -i key.pem $SSH_USER@$SSH_HOST << 'EOF'
+#            pkill -f 'java -jar' || true
+#            nohup java -jar /tmp/app.jar > /tmp/app.log 2>&1 &
+#            echo "✅ Application restarted successfully!"
+#          EOF
