@@ -203,6 +203,7 @@ public class DevProfileServiceImpl implements DevProfileService {
                 .linkedIn(profile.getLinkedIn())
                 .aboutDev(profile.getAboutDev())
                 .techStacks(techStackNames)
+                .dev_id(profile.getId())
                 .build();
     }
 }

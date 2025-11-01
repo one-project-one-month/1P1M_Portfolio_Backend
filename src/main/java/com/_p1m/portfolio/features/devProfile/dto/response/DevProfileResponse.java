@@ -18,4 +18,5 @@ public class DevProfileResponse {
     private String linkedIn;
     private String aboutDev;
     private List<String> techStacks;
+    private long dev_id;
 }
