@@ -1,37 +1,37 @@
-#name: Main Task
-#
-#on:
-#  push:
-#    branches:
-#      - main
-#      - staging
-#      - dev
-#      - ft*
-#  pull_request:
-#    branches:
-#      - main
-#      - staging
-#      - dev
-#      - ft*
-#  workflow_dispatch:
-#
-#concurrency:
-#  group: ${{ github.workflow }}-${{ github.ref }}
-#  cancel-in-progress: true
-#
-#jobs:
-#  build:
-#    uses: ./.github/workflows/build.yml
-#
-#  publish:
-#    needs: build
-#    if: >
-#      github.event_name == 'push' && (
-#        github.ref == 'refs/heads/main' ||
-#        github.ref == 'refs/heads/staging'
-#      )
-#    uses: ./.github/workflows/publish.yml
-#    secrets:
-#      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-#      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+name: Main Task
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - dev
+      - ft*
+  pull_request:
+    branches:
+      - main
+      - staging
+      - dev
+      - ft*
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+
+  publish:
+    needs: build
+    if: >
+      github.event_name == 'push' && (
+        github.ref == 'refs/heads/main' ||
+        github.ref == 'refs/heads/staging'
+      )
+    uses: ./.github/workflows/publish.yml
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
